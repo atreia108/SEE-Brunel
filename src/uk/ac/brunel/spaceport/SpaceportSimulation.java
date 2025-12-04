@@ -1,19 +1,14 @@
 package uk.ac.brunel.spaceport;
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.PooledEngine;
 import io.github.atreia108.vega.components.HLAInteractionComponent;
 import io.github.atreia108.vega.core.ASpaceFomSimulation;
 import io.github.atreia108.vega.core.HLAInteractionManager;
 import io.github.atreia108.vega.core.HLAInteractionQueue;
-import io.github.atreia108.vega.core.HLAObjectManager;
-import io.github.atreia108.vega.utils.VegaUtilities;
 import uk.ac.brunel.components.FederateMessageComponent;
-import uk.ac.brunel.components.PositionComponent;
 import uk.ac.brunel.spaceport.ui.MessageInteractionTable;
 import uk.ac.brunel.spaceport.ui.SendMessageFrame;
 import uk.ac.brunel.utils.ComponentMappers;
-import uk.ac.brunel.utils.World;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -27,14 +22,11 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
     private static final boolean DEBUG_MODE = true;
     private static final String CONFIG_FILE = "resources/Spaceport.xml";
 
-    private static PooledEngine engine;
-
     private MessageInteractionTable tablePane;
 
     private Entity spaceport;
     private final Map<Integer, String> landerPadMap = new HashMap<>();
     private final Map<String, Integer> padLanderMap = new HashMap<>();
-    private boolean spaceportAttributesSent = false;
 
     public SpaceportSimulation() {
         super(CONFIG_FILE);
@@ -90,53 +82,13 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
 
     @Override
     protected void onInit() {
-        engine = VegaUtilities.engine();
-        World world = new World(engine);
-
-        spaceport = world.createSpaceport("Spaceport", "Operational", "AitkenBasinLocalFixed", 0.0f, 0.0f, 0.0f);
         Runnable r = this::createAndShowGUI;
         SwingUtilities.invokeLater(r);
     }
 
     @Override
     protected void onRun() {
-        if (!spaceportAttributesSent) {
-            HLAObjectManager.sendInstanceUpdate(spaceport);
-            spaceportAttributesSent = true;
-        } else {
-            PositionComponent positionComponent = ComponentMappers.position.get(spaceport);
-            // positionComponent.pos.x += 1.0f;
-            // positionComponent.pos.y += 1.0f;
-
-            HLAObjectManager.sendInstanceUpdate(spaceport);
-        }
-
         updateCommandCenter();
-
-        /*
-        Set<Entity> remoteEntities = HLAObjectManager.getAllRemoteEntities();
-        System.out.println("Total Remote Entities: " + remoteEntities.size());
-
-        int counter = 0;
-
-        for (Entity remoteEntity : remoteEntities) {
-            if (counter == 3) {
-                break;
-            } else {
-                ++counter;
-            }
-
-            HLAObjectComponent objectComponent = VegaUtilities.objectComponentMapper().get(remoteEntity);
-
-            if (objectComponent.className.equals("HLAobjectRoot.ReferenceFrame")) {
-                PhysicalEntityComponent physicalEntityComponent = ComponentMappers.physicalEntity.get(remoteEntity);
-                ReferenceFrameComponent referenceFrameComponent = ComponentMappers.frame.get(remoteEntity);
-                PositionComponent positionComponent = ComponentMappers.position.get(remoteEntity);
-
-                System.out.println("Reference Frame: " + physicalEntityComponent.name + ", Parent: " + referenceFrameComponent.name + ", Position: " + positionComponent.pos.x + ", " + positionComponent.pos.y + ", " + positionComponent.pos.z);
-            }
-        }
-         */
     }
 
     private void updateCommandCenter() {

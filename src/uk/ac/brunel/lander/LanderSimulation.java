@@ -4,22 +4,14 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import io.github.atreia108.vega.components.HLAInteractionComponent;
 import io.github.atreia108.vega.core.ASpaceFomSimulation;
-import io.github.atreia108.vega.core.HLAInteractionManager;
 import io.github.atreia108.vega.utils.VegaUtilities;
 import uk.ac.brunel.components.FederateMessageComponent;
-import uk.ac.brunel.systems.MovementSystem;
-import uk.ac.brunel.systems.NavigationSystem;
-import uk.ac.brunel.systems.WaypointAllocSystem;
-import uk.ac.brunel.systems.WaypointDeallocSystem;
 import uk.ac.brunel.utils.World;
-
-import java.util.Random;
 
 public class LanderSimulation extends ASpaceFomSimulation {
     private static final String CONFIG_FILE = "resources/Lander.xml";
 
     private PooledEngine engine;
-    private World world;
 
     public LanderSimulation() {
         super(CONFIG_FILE);
@@ -29,20 +21,13 @@ public class LanderSimulation extends ASpaceFomSimulation {
     @Override
     protected void onInit() {
         engine = VegaUtilities.engine();
-        world = new World(engine);
+        World world = new World(engine);
 
-        Entity lander1 = world.createLander("brunel_lander1", "Standby","AitkenBasinLocalFixed", 400.0f, -7200.0f, -1000.0f);
-        Entity lander2 = world.createLander("brunel_lander2", "Standby", "AitkenBasinLocalFixed", 400.0f, -7200.0f, -1000.0f);
-        Entity lander3 = world.createLander("brunel_lander2", "Standby", "AitkenBasinLocalFixed", 400.0f, -7200.0f, -1000.0f);
+        Entity lander = world.createLander("Lander", "Standby","", World.X, World.Y, World.Z);
 
-        engine.addEntity(lander1);
-        engine.addEntity(lander2);
-        engine.addEntity(lander3);
+        engine.addEntity(lander);
 
-        engine.addSystem(new WaypointAllocSystem());
-        engine.addSystem(new NavigationSystem());
-        engine.addSystem(new MovementSystem());
-        engine.addSystem(new WaypointDeallocSystem());
+        // TODO - Add systems here.
     }
 
     @Override
