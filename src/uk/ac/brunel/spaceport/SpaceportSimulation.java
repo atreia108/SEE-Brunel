@@ -24,7 +24,6 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
 
     private MessageInteractionTable tablePane;
 
-    private Entity spaceport;
     private final Map<Integer, String> landerPadMap = new HashMap<>();
     private final Map<String, Integer> padLanderMap = new HashMap<>();
 
@@ -133,10 +132,6 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
     }
 
     public boolean getLaunchPadStatus(int designation) {
-        if (spaceport == null) {
-            return false;
-        }
-
         return !landerPadMap.containsKey(designation);
     }
 

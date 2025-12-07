@@ -29,7 +29,7 @@ public class SpaceTimeCoordinateStateConverter implements IDataConverter {
         PositionComponent positionComponent = ComponentMappers.position.get(entity);
         MovementComponent movementComponent = ComponentMappers.movement.get(entity);
         QuaternionComponent quaternionComponent = ComponentMappers.quaternion.get(entity);
-        ReferenceFrameComponent referenceFrameComponent = ComponentMappers.frame.get(entity);
+        ReferenceFrameComponent referenceFrameComponent = ComponentMappers.referenceFrame.get(entity);
 
         translationalState = encoderFactory.createHLAfixedRecord();
         position = encoderFactory.createHLAfixedArray(encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE());
@@ -80,7 +80,7 @@ public class SpaceTimeCoordinateStateConverter implements IDataConverter {
         PositionComponent positionComponent = ComponentMappers.position.get(entity);
         MovementComponent movementComponent = ComponentMappers.movement.get(entity);
         QuaternionComponent quaternionComponent = ComponentMappers.quaternion.get(entity);
-        ReferenceFrameComponent referenceFrameComponent = ComponentMappers.frame.get(entity);
+        ReferenceFrameComponent referenceFrameComponent = ComponentMappers.referenceFrame.get(entity);
 
         translationalState = encoderFactory.createHLAfixedRecord();
 

@@ -56,10 +56,9 @@ public class MessageInteractionTable extends JPanel {
         JLabel messageTypeLabel = new JLabel("Message Type:", SwingConstants.TRAILING);
         messageTypeComboBox = new JComboBox<>(new FederateMessageType[] {
                 FederateMessageType.BRUNEL_SPACEPORT_BEACON_ACKNOWLEDGED,
-                // FederateMessageType.BRUNEL_SPACEPORT_CABLECAR_LANDER_TOUCHDOWN,
                 FederateMessageType.BRUNEL_SPACEPORT_LANDER_ARRIVAL_ACKNOWLEDGED,
                 FederateMessageType.BRUNEL_SPACEPORT_LANDER_TOUCHDOWN_ACKNOWLEDGED,
-                FederateMessageType.BRUNEL_SPACEPORT_LANDER_DEPARTURE_ACKNOWLEDGED
+                FederateMessageType.BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETED
         });
 
         messageTypeComboBox.addActionListener(e -> {
@@ -145,7 +144,7 @@ public class MessageInteractionTable extends JPanel {
                 boolean rtiOperation = simulator.sendHLAInteraction(receiverTextField.getText(), messageTypeComboBox.getSelectedItem().toString(), contentTextField.getText());
                 boolean deallocOperation = true;
 
-                if (messageTypeComboBox.getSelectedItem().equals(FederateMessageType.BRUNEL_SPACEPORT_LANDER_DEPARTURE_ACKNOWLEDGED)) {
+                if (messageTypeComboBox.getSelectedItem().equals(FederateMessageType.BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETED)) {
                     String landerName = receiverTextField.getText();
                     deallocOperation = simulator.deallocLaunchPad(landerName);
                 }

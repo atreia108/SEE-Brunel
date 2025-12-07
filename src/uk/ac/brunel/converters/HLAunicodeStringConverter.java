@@ -19,9 +19,7 @@ public class HLAunicodeStringConverter implements IMultiDataConverter {
 
     @Override
     public void decode(Entity entity, EncoderFactory encoderFactory, byte[] buffer, int trigger) throws DecoderException {
-        if (string == null) {
-            string = encoderFactory.createHLAunicodeString();
-        }
+        string = encoderFactory.createHLAunicodeString();
 
         string.decode(buffer);
 
@@ -52,7 +50,7 @@ public class HLAunicodeStringConverter implements IMultiDataConverter {
                 }
                 break;
             case 4:
-                referenceFrameComponent = ComponentMappers.frame.get(entity);
+                referenceFrameComponent = ComponentMappers.referenceFrame.get(entity);
                 if (referenceFrameComponent != null) {
                     referenceFrameComponent.name = string.getValue();
                 }
@@ -86,9 +84,7 @@ public class HLAunicodeStringConverter implements IMultiDataConverter {
 
     @Override
     public byte[] encode(Entity entity, EncoderFactory encoderFactory, int trigger) {
-        if (string == null) {
-            string = encoderFactory.createHLAunicodeString();
-        }
+        string = encoderFactory.createHLAunicodeString();
 
         switch (trigger) {
             case 0:
@@ -117,7 +113,7 @@ public class HLAunicodeStringConverter implements IMultiDataConverter {
                 }
                 break;
             case 4:
-                referenceFrameComponent = ComponentMappers.frame.get(entity);
+                referenceFrameComponent = ComponentMappers.referenceFrame.get(entity);
                 if (referenceFrameComponent != null && !referenceFrameComponent.name.isEmpty()) {
                     string.setValue(referenceFrameComponent.name);
                 }
