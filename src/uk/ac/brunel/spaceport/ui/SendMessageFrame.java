@@ -26,7 +26,7 @@ public class SendMessageFrame extends JFrame {
         JLabel messageTypeLabel = new JLabel("Message: ", SwingConstants.TRAILING);
         JComboBox<FederateMessageType> messageTypeComboBox = new JComboBox<>(new FederateMessageType[]{
                 FederateMessageType.BRUNEL_SPACEPORT_CABLECAR_LANDER_TOUCHDOWN,
-                FederateMessageType.BRUNEL_SPACEPORT_LANDER_DEPART
+                FederateMessageType.BRUNEL_SPACEPORT_LANDER_REQUEST_DEPARTURE
         });
         messageTypeLabel.setLabelFor(messageTypeComboBox);
         form.add(messageTypeLabel);

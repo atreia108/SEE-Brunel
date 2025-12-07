@@ -44,7 +44,7 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
         }
 
         JFrame frame = new JFrame("Spaceport Command Center");
-        frame.setSize(1600, 900);
+        frame.setSize(1920, 1080);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         WindowListener closeWindow = new WindowAdapter() {
@@ -97,7 +97,12 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
             FederateMessageComponent federateMessageComponent = ComponentMappers.federateMessage.get(interaction);
 
             if (!federateMessageComponent.sender.isEmpty() && !federateMessageComponent.receiver.isEmpty() && !federateMessageComponent.content.isEmpty() && !federateMessageComponent.type.isEmpty()) {
-                tablePane.getModel().addRow(federateMessageComponent.sender,  federateMessageComponent.type, federateMessageComponent.content);
+                if (federateMessageComponent.type.equals("BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETED")) {
+                    String landerName = federateMessageComponent.sender;
+                    deallocLaunchPad(landerName);
+                } else {
+                    tablePane.getModel().addRow(federateMessageComponent.sender, federateMessageComponent.type, federateMessageComponent.content);
+                }
             }
         }
 

@@ -1,17 +1,23 @@
 package uk.ac.brunel.systems;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
-import com.badlogic.gdx.math.Vector3;
+import io.github.atreia108.vega.components.HLAInteractionComponent;
 import io.github.atreia108.vega.components.HLAObjectComponent;
+import io.github.atreia108.vega.core.HLAInteractionManager;
 import io.github.atreia108.vega.core.HLAObjectManager;
+import io.github.atreia108.vega.utils.VegaUtilities;
+import uk.ac.brunel.components.FederateMessageComponent;
 import uk.ac.brunel.components.MovementComponent;
 import uk.ac.brunel.components.NavigationComponent;
 import uk.ac.brunel.components.PositionComponent;
+import uk.ac.brunel.lander.NavigationDirection;
 import uk.ac.brunel.utils.ComponentMappers;
 
 public class MovementSystem extends IteratingSystem {
+    private static final float MIN_Z_ALTITUDE = -5387.0f;
 
     public MovementSystem() {
         super(Family.all(PositionComponent.class, MovementComponent.class, NavigationComponent.class, HLAObjectComponent.class).get());
@@ -22,9 +28,10 @@ public class MovementSystem extends IteratingSystem {
         PositionComponent positionComponent = ComponentMappers.position.get(entity);
         NavigationComponent navigationComponent = ComponentMappers.navigation.get(entity);
         MovementComponent movementComponent = ComponentMappers.movement.get(entity);
+        HLAObjectComponent objectComponent = VegaUtilities.objectComponentMapper().get(entity);
 
         // Arrival
-        if (navigationComponent.order == 0) {
+        if (navigationComponent.direction == NavigationDirection.ARRIVAL) {
             if (!horizontalConditionMet(positionComponent, navigationComponent)) {
                 if (navigationComponent.waypoint.x > positionComponent.pos.x) {
                     positionComponent.pos.x += movementComponent.vel.x;
@@ -50,7 +57,6 @@ public class MovementSystem extends IteratingSystem {
 
                  */
 
-                float MIN_Z_ALTITUDE = -5387.0f;
                 if (positionComponent.pos.z > MIN_Z_ALTITUDE) {
                     positionComponent.pos.z -= movementComponent.vel.z;
                 }
@@ -65,7 +71,34 @@ public class MovementSystem extends IteratingSystem {
                 positionComponent.pos.z -= movementComponent.vel.z;
             }
         } else {
-            // Departure
+            if (positionComponent.pos.z < MIN_Z_ALTITUDE) {
+                positionComponent.pos.z += movementComponent.vel.z;
+                return;
+            } else if (positionComponent.pos.z == MIN_Z_ALTITUDE) {
+                notifyDeparture(objectComponent.instanceName);
+            }
+
+            if (!horizontalConditionMet(positionComponent, navigationComponent)) {
+                if (navigationComponent.waypoint.x > positionComponent.pos.x) {
+                    positionComponent.pos.x += movementComponent.vel.x;
+                } else if (navigationComponent.waypoint.x < positionComponent.pos.x) {
+                    positionComponent.pos.x -= movementComponent.vel.x;
+                }
+
+                if (navigationComponent.waypoint.y > positionComponent.pos.y) {
+                    positionComponent.pos.y += movementComponent.vel.y;
+                } else if (navigationComponent.waypoint.y < positionComponent.pos.y) {
+                    positionComponent.pos.y -= movementComponent.vel.y;
+                }
+            }
+
+            if (!verticalConditionMet(positionComponent, navigationComponent)) {
+                if (navigationComponent.waypoint.z > positionComponent.pos.z) {
+                    positionComponent.pos.z += movementComponent.vel.z;
+                } else if (navigationComponent.waypoint.z < positionComponent.pos.z) {
+                    positionComponent.pos.z -= movementComponent.vel.z;
+                }
+            }
         }
 
         HLAObjectManager.sendInstanceUpdate(entity);
@@ -91,5 +124,23 @@ public class MovementSystem extends IteratingSystem {
         }
 
         return condition;
+    }
+
+    private void notifyDeparture(String instanceName) {
+        Engine engine = VegaUtilities.engine();
+
+        Entity interaction = engine.createEntity();
+        HLAInteractionComponent interactionComponent = engine.createComponent(HLAInteractionComponent.class);
+        interactionComponent.className = "HLAinteractionRoot.FederateMessage";
+        FederateMessageComponent federateMessageComponent = engine.createComponent(FederateMessageComponent.class);
+        federateMessageComponent.sender = instanceName;
+        federateMessageComponent.receiver = "Spaceport";
+        federateMessageComponent.content = "Departing to available holding position";
+        federateMessageComponent.type = "BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETED";
+
+        interaction.add(interactionComponent);
+        interaction.add(federateMessageComponent);
+
+        HLAInteractionManager.sendInteraction(interaction);
     }
 }

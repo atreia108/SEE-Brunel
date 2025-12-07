@@ -1,13 +1,18 @@
 package uk.ac.brunel.systems;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
+import io.github.atreia108.vega.components.HLAInteractionComponent;
 import io.github.atreia108.vega.components.HLAObjectComponent;
+import io.github.atreia108.vega.core.HLAInteractionManager;
+import io.github.atreia108.vega.core.HLAInteractionQueue;
 import io.github.atreia108.vega.core.HLAObjectManager;
-import uk.ac.brunel.components.MovementComponent;
-import uk.ac.brunel.components.NavigationComponent;
-import uk.ac.brunel.components.PositionComponent;
+import io.github.atreia108.vega.utils.VegaUtilities;
+import uk.ac.brunel.archetypes.FederateMessage;
+import uk.ac.brunel.components.*;
+import uk.ac.brunel.lander.NavigationDirection;
 import uk.ac.brunel.utils.ComponentMappers;
 
 public class WaypointCompletionSystem extends IteratingSystem {
@@ -20,6 +25,8 @@ public class WaypointCompletionSystem extends IteratingSystem {
     protected void processEntity(Entity entity, float v) {
         PositionComponent positionComponent = ComponentMappers.position.get(entity);
         NavigationComponent navigationComponent = ComponentMappers.navigation.get(entity);
+        MovementComponent movementComponent = ComponentMappers.movement.get(entity);
+        HLAObjectComponent objectComponent = VegaUtilities.objectComponentMapper().get(entity);
 
         if (horizontalConditionMet(positionComponent, navigationComponent) && verticalConditionMet(positionComponent, navigationComponent)) {
             // Coordinate correction because we won't have perfect alignment with the current algorithm.
@@ -27,8 +34,48 @@ public class WaypointCompletionSystem extends IteratingSystem {
             positionComponent.pos.y = navigationComponent.waypoint.y;
             positionComponent.pos.z = navigationComponent.waypoint.z;
 
+            Engine engine = VegaUtilities.engine();
+
+            if (navigationComponent.direction == NavigationDirection.ARRIVAL) {
+                Entity interaction = engine.createEntity();
+                HLAInteractionComponent interactionComponent = engine.createComponent(HLAInteractionComponent.class);
+                interactionComponent.className = "HLAinteractionRoot.FederateMessage";
+
+                FederateMessageComponent federateMessageComponent = engine.createComponent(FederateMessageComponent.class);
+                federateMessageComponent.sender = objectComponent.instanceName;
+                federateMessageComponent.receiver = "Spaceport";
+                federateMessageComponent.type = "BRUNEL_LANDER_SPACEPORT_TOUCHDOWN";
+
+                interaction.add(interactionComponent);
+                interaction.add(federateMessageComponent);
+
+                HLAInteractionManager.sendInteraction(interaction);
+            } else {
+                /*
+                Entity interaction =  engine.createEntity();
+                HLAInteractionComponent interactionComponent = engine.createComponent(HLAInteractionComponent.class);
+                interactionComponent.className = "HLAinteractionRoot.FederateMessage";
+
+                FederateMessageComponent federateMessageComponent = engine.createComponent(FederateMessageComponent.class);
+                federateMessageComponent.sender = objectComponent.instanceName;
+                federateMessageComponent.receiver = "Spaceport";
+                federateMessageComponent.type = "BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETE";
+                federateMessageComponent.content = "Departed from launch pad.";
+
+                interaction.add(interactionComponent);
+                interaction.add(federateMessageComponent);
+                HLAInteractionManager.sendInteraction(interaction);
+                 */
+
+                HoldingPatternComponent holdingPatternComponent = engine.createComponent(HoldingPatternComponent.class);
+                entity.add(holdingPatternComponent);
+            }
+
             entity.remove(NavigationComponent.class);
-            System.out.println("Mission Complete!");
+
+            movementComponent.vel.x = 0;
+            movementComponent.vel.y = 0;
+            movementComponent.vel.z = 0;
         }
 
         HLAObjectManager.sendInstanceUpdate(entity);

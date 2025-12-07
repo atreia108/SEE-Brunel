@@ -30,7 +30,6 @@ public class LaunchPadRequestSystem extends IteratingSystem {
         HLAObjectComponent objectComponent = VegaUtilities.objectComponentMapper().get(entity);
 
         int sum = rand.nextInt(0, 6) + rand.nextInt(0, 6) + rand.nextInt(0, 2);
-        System.out.println("SUM: " + sum);
 
         if (sum > RNG_THRESHOLD && !allocSystem.isRegistered(entity)) {
             System.out.println("Processing entity: " + objectComponent.instanceName);
