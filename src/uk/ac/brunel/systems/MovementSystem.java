@@ -66,9 +66,9 @@ public class MovementSystem extends IteratingSystem {
         if (horizontalConditionMet(positionComponent, navigationComponent) && !verticalConditionMet(positionComponent, navigationComponent)) {
 
             if (navigationComponent.waypoint.z > positionComponent.pos.z) {
-                positionComponent.pos.z += movementComponent.vel.z;
+                positionComponent.pos.z += 10.0f;
             } else if (navigationComponent.waypoint.z < positionComponent.pos.z) {
-                positionComponent.pos.z -= movementComponent.vel.z;
+                positionComponent.pos.z -= 10.0f;
             }
         } else {
             if (positionComponent.pos.z < MIN_Z_ALTITUDE) {

@@ -16,27 +16,28 @@ import uk.ac.brunel.lander.NavigationDirection;
 import uk.ac.brunel.utils.ComponentMappers;
 import uk.ac.brunel.utils.World;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class WaypointAllocSystem extends EntitySystem {
     private final Set<Entity> pendingLanders;
 
     private final Set<Entity> landers;
+    private final Map<Entity, Integer> requestWaitTimes;
 
     public WaypointAllocSystem(LanderSimulation simulator) {
         pendingLanders = new HashSet<>();
         this.landers = simulator.getLanders();
+        this.requestWaitTimes = new HashMap<>();
     }
 
     public void register(Entity lander) {
         pendingLanders.add(lander);
+        requestWaitTimes.put(lander, 0);
     }
 
     public void deregister(Entity lander) {
         pendingLanders.remove(lander);
+        requestWaitTimes.remove(lander);
         lander.remove(HoldingPatternComponent.class);
     }
 
@@ -59,6 +60,7 @@ public class WaypointAllocSystem extends EntitySystem {
     public void update(float deltaTime) {
         arrivalAllocation();
         departureAllocation();
+        resetStaleRequests();
     }
 
     private void arrivalAllocation() {
@@ -97,12 +99,6 @@ public class WaypointAllocSystem extends EntitySystem {
                         && navigationComponent == null) {
                     calibrateDepartureNavigation(lander);
                 }
-                /*
-                if (federateMessageComponent.receiver.equals(objectComponent.instanceName) &&
-                        navigationComponent != null && !(navigationComponent.direction == NavigationDirection.ARRIVAL || navigationComponent.direction == NavigationDirection.DEPARTURE)) {
-                    calibrateDepartureNavigation(lander);
-                }
-                 */
             }
         }
     }
@@ -111,17 +107,14 @@ public class WaypointAllocSystem extends EntitySystem {
         Random rand = new Random();
         int selection = rand.nextInt(0, 4);
 
-        switch (selection) {
-            case 0:
-                return World.POINT_CHARLIE.cpy();
-            case 1:
-                return World.POINT_CHARLIE.cpy();
-            case 2:
-                return World.POINT_CHARLIE.cpy();
-            default:
+        return switch (selection) {
+            case 0 -> World.POINT_CHARLIE.cpy();
+            case 1 -> World.POINT_FOXTROT.cpy();
+            case 2 -> World.POINT_ROMEO.cpy();
+            default ->
                 // Origin of Aitken Basin reference frame
-                return World.POINT_CHARLIE.cpy();
-        }
+                    World.POINT_CHARLIE.cpy();
+        };
     }
 
     private Entity findLander(String instanceName) {
@@ -140,9 +133,9 @@ public class WaypointAllocSystem extends EntitySystem {
         NavigationComponent navigationComponent = engine.createComponent(NavigationComponent.class);
         navigationComponent.direction = NavigationDirection.ARRIVAL;
         MovementComponent movementComponent = ComponentMappers.movement.get(lander);
-        movementComponent.vel.x = 10.0f;
-        movementComponent.vel.y = 10.0f;
-        movementComponent.vel.z = 10.0f;
+        movementComponent.vel.x = LanderSimulation.VELOCITY;
+        movementComponent.vel.y = LanderSimulation.VELOCITY;
+        movementComponent.vel.z = LanderSimulation.VELOCITY;
 
         if (launchPadName.equals("LPAD_1")) {
             navigationComponent.waypoint = World.LPAD_1.cpy();
@@ -162,10 +155,22 @@ public class WaypointAllocSystem extends EntitySystem {
         lander.add(navigationComponent);
 
         MovementComponent movementComponent = ComponentMappers.movement.get(lander);
-        movementComponent.vel.x = 10.0f;
-        movementComponent.vel.y = 10.0f;
-        movementComponent.vel.z = 10.0f;
+        movementComponent.vel.x = LanderSimulation.VELOCITY;
+        movementComponent.vel.y = LanderSimulation.VELOCITY;
+        movementComponent.vel.z = LanderSimulation.VELOCITY;
 
         System.out.println("Lander is headed to " + navigationComponent.direction);
+    }
+
+    private void resetStaleRequests() {
+        for (Entity lander: requestWaitTimes.keySet()) {
+            int counter = requestWaitTimes.get(lander);
+            System.out.println("Lander: " + counter);
+            if (counter > 10) {
+                pendingLanders.remove(lander);
+            } else {
+                requestWaitTimes.put(lander, ++counter);
+            }
+        }
     }
 }

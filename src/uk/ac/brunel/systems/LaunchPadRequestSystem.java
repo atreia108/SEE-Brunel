@@ -14,7 +14,7 @@ import uk.ac.brunel.components.HoldingPatternComponent;
 import java.util.Random;
 
 public class LaunchPadRequestSystem extends IteratingSystem {
-    private static final int RNG_THRESHOLD = 7;
+    private static final int RNG_THRESHOLD = 5;
 
     private final Random rand;
     private final WaypointAllocSystem allocSystem;
@@ -32,7 +32,6 @@ public class LaunchPadRequestSystem extends IteratingSystem {
         int sum = rand.nextInt(0, 6) + rand.nextInt(0, 6) + rand.nextInt(0, 2);
 
         if (sum > RNG_THRESHOLD && !allocSystem.isRegistered(entity)) {
-            System.out.println("Processing entity: " + objectComponent.instanceName);
             Engine engine = VegaUtilities.engine();
 
             Entity interaction = engine.createEntity();

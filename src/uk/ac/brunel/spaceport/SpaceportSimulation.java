@@ -65,7 +65,14 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
         newMessage.addActionListener(e -> {
             sendMessageFrame.setVisible(true);
         });
+        JMenuItem clearAll = new JMenuItem("Clear All");
+        clearAll.addActionListener(e -> {
+            tablePane.getModel().removeAllRows();
+        });
+
         optionsMenu.add(newMessage);
+        optionsMenu.add(clearAll);
+
         menuBar.add(optionsMenu);
 
         frame.setJMenuBar(menuBar);
@@ -100,6 +107,10 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
                 if (federateMessageComponent.type.equals("BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETED")) {
                     String landerName = federateMessageComponent.sender;
                     deallocLaunchPad(landerName);
+                }
+                else if (federateMessageComponent.type.equals("BRUNEL_LANDER_SPACEPORT_TOUCHDOWN")) {
+                    tablePane.showNotification(federateMessageComponent.sender);
+                    System.out.println("show notification.");
                 } else {
                     tablePane.getModel().addRow(federateMessageComponent.sender, federateMessageComponent.type, federateMessageComponent.content);
                 }

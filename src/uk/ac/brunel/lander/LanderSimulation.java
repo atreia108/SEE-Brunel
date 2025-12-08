@@ -2,7 +2,6 @@ package uk.ac.brunel.lander;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
-import io.github.atreia108.vega.components.HLAObjectComponent;
 import io.github.atreia108.vega.core.ASpaceFomSimulation;
 import io.github.atreia108.vega.core.HLAInteractionQueue;
 import io.github.atreia108.vega.core.HLAObjectManager;
@@ -17,6 +16,7 @@ public class LanderSimulation extends ASpaceFomSimulation {
     private static final String CONFIG_FILE = "resources/Lander.xml";
 
     private PooledEngine engine;
+    public static final float VELOCITY = 20.0f;
 
     private boolean sentAttributes = false;
     private final Set<Entity> landers = new HashSet<>();
@@ -32,7 +32,6 @@ public class LanderSimulation extends ASpaceFomSimulation {
         World world = new World(engine);
 
         // At -5387 Z-units, the lander should begin making its descent onto the launch pad.
-        // lander = world.createLander("Lander", "AitkenBasinLocalFixed", "Stationary", World.POINT_CHARLIE.x, World.POINT_CHARLIE.y, World.POINT_CHARLIE.z);
         Entity lander = world.createLander("Lander", "AitkenBasinLocalFixed", World.POINT_CHARLIE);
         landers.add(lander);
 

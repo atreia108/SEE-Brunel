@@ -129,6 +129,11 @@ public class MessageInteractionTableModel extends AbstractTableModel {
         fireTableRowsDeleted(row, row);
     }
 
+    public void removeAllRows() {
+        data.clear();
+        fireTableDataChanged();
+    }
+
     public void addRow(String sender, String messageType, String content) {
         ArrayList<Object> rowData = new ArrayList<>();
         rowData.add(formatter.format(LocalTime.now()));

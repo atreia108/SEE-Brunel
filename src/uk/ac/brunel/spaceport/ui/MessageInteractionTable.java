@@ -216,4 +216,12 @@ public class MessageInteractionTable extends JPanel {
         contentTextField.setEnabled(false);
         acknowledgementButton.setEnabled(false);
     }
+
+    public void showNotification(String landerName) {
+        JOptionPane.showMessageDialog(null,
+                landerName + "has touched down on the launch pad platform",
+                "Notification",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
 }
