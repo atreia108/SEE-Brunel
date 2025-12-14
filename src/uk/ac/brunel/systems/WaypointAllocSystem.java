@@ -112,7 +112,6 @@ public class WaypointAllocSystem extends EntitySystem {
             case 1 -> World.POINT_FOXTROT.cpy();
             case 2 -> World.POINT_ROMEO.cpy();
             default ->
-                // Origin of Aitken Basin reference frame
                     World.POINT_CHARLIE.cpy();
         };
     }
@@ -165,7 +164,6 @@ public class WaypointAllocSystem extends EntitySystem {
     private void resetStaleRequests() {
         for (Entity lander: requestWaitTimes.keySet()) {
             int counter = requestWaitTimes.get(lander);
-            System.out.println("Lander: " + counter);
             if (counter > 10) {
                 pendingLanders.remove(lander);
             } else {

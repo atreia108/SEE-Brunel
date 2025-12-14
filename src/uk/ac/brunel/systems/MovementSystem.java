@@ -38,24 +38,12 @@ public class MovementSystem extends IteratingSystem {
                 } else if (navigationComponent.waypoint.x < positionComponent.pos.x) {
                     positionComponent.pos.x -= movementComponent.vel.x;
                 }
-                /*
-                else {
-                    movementComponent.vel.x = 0.0f;
-                }
-
-                 */
 
                 if (navigationComponent.waypoint.y > positionComponent.pos.y) {
                     positionComponent.pos.y += movementComponent.vel.y;
                 } else if (navigationComponent.waypoint.y < positionComponent.pos.y) {
                     positionComponent.pos.y -= movementComponent.vel.y;
                 }
-                /*
-                else {
-                    movementComponent.vel.y = 0.0f;
-                }
-
-                 */
 
                 if (positionComponent.pos.z > MIN_Z_ALTITUDE) {
                     positionComponent.pos.z -= movementComponent.vel.z;

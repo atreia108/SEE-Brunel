@@ -7,10 +7,8 @@ import com.badlogic.ashley.systems.IteratingSystem;
 import io.github.atreia108.vega.components.HLAInteractionComponent;
 import io.github.atreia108.vega.components.HLAObjectComponent;
 import io.github.atreia108.vega.core.HLAInteractionManager;
-import io.github.atreia108.vega.core.HLAInteractionQueue;
 import io.github.atreia108.vega.core.HLAObjectManager;
 import io.github.atreia108.vega.utils.VegaUtilities;
-import uk.ac.brunel.archetypes.FederateMessage;
 import uk.ac.brunel.components.*;
 import uk.ac.brunel.lander.NavigationDirection;
 import uk.ac.brunel.utils.ComponentMappers;
@@ -45,28 +43,13 @@ public class WaypointCompletionSystem extends IteratingSystem {
                 federateMessageComponent.sender = objectComponent.instanceName;
                 federateMessageComponent.receiver = "Spaceport";
                 federateMessageComponent.type = "BRUNEL_LANDER_SPACEPORT_TOUCHDOWN";
+                federateMessageComponent.content = "Landed at Spaceport.";
 
                 interaction.add(interactionComponent);
                 interaction.add(federateMessageComponent);
 
                 HLAInteractionManager.sendInteraction(interaction);
             } else {
-                /*
-                Entity interaction =  engine.createEntity();
-                HLAInteractionComponent interactionComponent = engine.createComponent(HLAInteractionComponent.class);
-                interactionComponent.className = "HLAinteractionRoot.FederateMessage";
-
-                FederateMessageComponent federateMessageComponent = engine.createComponent(FederateMessageComponent.class);
-                federateMessageComponent.sender = objectComponent.instanceName;
-                federateMessageComponent.receiver = "Spaceport";
-                federateMessageComponent.type = "BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETE";
-                federateMessageComponent.content = "Departed from launch pad.";
-
-                interaction.add(interactionComponent);
-                interaction.add(federateMessageComponent);
-                HLAInteractionManager.sendInteraction(interaction);
-                 */
-
                 HoldingPatternComponent holdingPatternComponent = engine.createComponent(HoldingPatternComponent.class);
                 entity.add(holdingPatternComponent);
             }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Simulation Name="Spaceport">
-    <RtiConfiguration Host="10.192.232.85" Port="8989" Federation="SEE 2025" />
+    <RtiConfiguration Host="localhost" Port="8989" Federation="SEE 2025" />
     <Engine MinEntities="100" MaxEntities="250" MinComponents="100" MaxComponents="250" />
     <FomModules>
         <Fom FilePath="resources/SpaceportFOM.xml" />

@@ -65,13 +65,19 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
         newMessage.addActionListener(e -> {
             sendMessageFrame.setVisible(true);
         });
-        JMenuItem clearAll = new JMenuItem("Clear All");
+        JMenuItem clearAll = new JMenuItem("Clear Messages");
         clearAll.addActionListener(e -> {
             tablePane.getModel().removeAllRows();
+        });
+        JMenuItem freeLaunchPads = new JMenuItem("Deallocate Launch Pads");
+        freeLaunchPads.addActionListener(e -> {
+            landerPadMap.clear();
+            padLanderMap.clear();
         });
 
         optionsMenu.add(newMessage);
         optionsMenu.add(clearAll);
+        optionsMenu.add(freeLaunchPads);
 
         menuBar.add(optionsMenu);
 
@@ -95,6 +101,7 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
     @Override
     protected void onRun() {
         updateCommandCenter();
+        HLAInteractionQueue.clear();
     }
 
     private void updateCommandCenter() {
@@ -107,10 +114,10 @@ public class SpaceportSimulation extends ASpaceFomSimulation {
                 if (federateMessageComponent.type.equals("BRUNEL_LANDER_SPACEPORT_DEPARTURE_COMPLETED")) {
                     String landerName = federateMessageComponent.sender;
                     deallocLaunchPad(landerName);
+                    tablePane.showNotification(federateMessageComponent.sender + " has departed from the platform.");
                 }
                 else if (federateMessageComponent.type.equals("BRUNEL_LANDER_SPACEPORT_TOUCHDOWN")) {
-                    tablePane.showNotification(federateMessageComponent.sender);
-                    System.out.println("show notification.");
+                    tablePane.showNotification(federateMessageComponent.sender + " has landed on the platform.");
                 } else {
                     tablePane.getModel().addRow(federateMessageComponent.sender, federateMessageComponent.type, federateMessageComponent.content);
                 }

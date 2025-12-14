@@ -5,7 +5,7 @@ import uk.ac.brunel.spaceport.SpaceportSimulation;
 import javax.swing.*;
 
 public class SendMessageFrame extends JFrame {
-    private SpaceportSimulation simulator;
+    private final SpaceportSimulation simulator;
 
     public SendMessageFrame(SpaceportSimulation simulator) {
         super();
