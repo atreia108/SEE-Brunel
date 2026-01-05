@@ -28,14 +28,14 @@
  *
  */
 
-package uk.ac.brunel.encoding;
+package org.see.brunel.encoding;
 
 import hla.rti1516_2025.encoding.*;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
 import org.see.skf.core.Coder;
 import org.see.skf.core.HLAUtilityFactory;
-import uk.ac.brunel.types.SpaceTimeCoordinateState;
+import org.see.brunel.types.SpaceTimeCoordinateState;
 
 public class SpaceTimeCoordinateStateCoder implements Coder<SpaceTimeCoordinateState> {
     private final HLAfixedRecord coder;

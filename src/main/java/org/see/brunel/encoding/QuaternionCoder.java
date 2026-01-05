@@ -28,52 +28,47 @@
  *
  */
 
-package uk.ac.brunel.models;
+package org.see.brunel.encoding;
 
-import org.see.skf.annotations.Attribute;
-import org.see.skf.impl.encoding.HLAunicodeStringCoder;
-import org.see.skf.model.AccessLevel;
-import org.see.skf.model.objects.UpdatableInstance;
-import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
-import uk.ac.brunel.types.SpaceTimeCoordinateState;
+import hla.rti1516_2025.encoding.*;
+import org.apache.commons.numbers.quaternion.Quaternion;
+import org.see.skf.core.Coder;
+import org.see.skf.core.HLAUtilityFactory;
 
-public class ReferenceFrame extends UpdatableInstance {
-    @Attribute(name = "name", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
-    private String name;
+public class QuaternionCoder implements Coder<Quaternion> {
+    private final HLAfixedRecord coder;
 
-    @Attribute(name = "parent_name", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
-    private String parentName;
+    private final HLAfloat64LE scalar;
+    private final HLAfixedArray<HLAfloat64LE> vector;
 
-    @Attribute(name = "state", coder = SpaceTimeCoordinateStateCoder.class, access = AccessLevel.NONE)
-    private SpaceTimeCoordinateState state;
+    public QuaternionCoder() {
+        EncoderFactory encoderFactory = HLAUtilityFactory.INSTANCE.getEncoderFactory();
+        coder = encoderFactory.createHLAfixedRecord();
 
-    public ReferenceFrame() {
-        this.name = "";
-        this.parentName = "";
-        this.state = new SpaceTimeCoordinateState();
+        scalar = encoderFactory.createHLAfloat64LE();
+        vector = encoderFactory.createHLAfixedArray(encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE(),  encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE());
+        coder.add(scalar);
+        coder.add(vector);
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public Quaternion decode(byte[] bytes) throws DecoderException {
+        coder.decode(bytes);
+        return Quaternion.of(scalar.getValue(), vector.get(0).getValue(), vector.get(1).getValue(), vector.get(2).getValue());
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public byte[] encode(Quaternion quaternion) {
+        scalar.setValue(quaternion.getW());
+        vector.get(0).setValue(quaternion.getX());
+        vector.get(1).setValue(quaternion.getY());
+        vector.get(2).setValue(quaternion.getZ());
+
+        return coder.toByteArray();
     }
 
-    public String getParentName() {
-        return parentName;
-    }
-
-    public void setParentName(String parentName) {
-        this.parentName = parentName;
-    }
-
-    public SpaceTimeCoordinateState getState() {
-        return state;
-    }
-
-    public void setState(SpaceTimeCoordinateState state) {
-        this.state = state;
+    @Override
+    public Class<Quaternion> getAllowedType() {
+        return Quaternion.class;
     }
 }

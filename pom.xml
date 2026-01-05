@@ -38,8 +38,19 @@
             <artifactId>ejml-all</artifactId>
             <version>0.44.0</version>
         </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.18</version>
+        </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.7</version>
+        </dependency>
 
-        <!-- HLA libraries. Needs to be manually generated, see https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html
+        <!-- HLA libraries that are NOT publicly hosted and will not be automatically resolved by Maven.
+        Needs to be manually generated, see https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html
         for instructions on how to generate them for your local maven repository. -->
         <dependency>
             <groupId>se.pitch</groupId>

@@ -28,7 +28,7 @@
  *
  */
 
-package uk.ac.brunel.models;
+package org.see.brunel.models.objects;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
@@ -36,28 +36,34 @@ import org.see.skf.annotations.Attribute;
 import org.see.skf.annotations.ObjectClass;
 import org.see.skf.impl.encoding.HLAunicodeStringCoder;
 import org.see.skf.model.AccessLevel;
-import org.see.skf.model.objects.UpdatableInstance;
-import uk.ac.brunel.encoding.QuaternionCoder;
-import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
-import uk.ac.brunel.encoding.Vector3DCoder;
-import uk.ac.brunel.types.SpaceTimeCoordinateState;
-
+import org.see.brunel.encoding.QuaternionCoder;
+import org.see.brunel.encoding.SpaceTimeCoordinateStateCoder;
+import org.see.brunel.encoding.Vector3DCoder;
+import org.see.brunel.types.SpaceTimeCoordinateState;
+import org.see.skf.model.objects.UpdatableObjectInstance;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
-public class PhysicalEntity extends UpdatableInstance {
-    @Attribute(name = "name", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
+public class PhysicalEntity extends UpdatableObjectInstance {
+    private static final Vector3D LAUNCH_PAD_1 = Vector3D.of(100.2, 430.0, -5587.0);
+    private static final Vector3D LAUNCH_PAD_2 = Vector3D.of(100.0, 400.0, -5587.0);
+
+    private static final Vector3D POINT_CHARLIE = Vector3D.of(-500.0, -200.0, -5200.0);
+    private static final Vector3D POINT_FOXTROT = Vector3D.of(600.0, 500.0, -4900.0);
+    private static final Vector3D POINT_ROMEO = Vector3D.of(400.0, -100.0, -5000.0);
+
+    @Attribute(name = "name", coder = HLAunicodeStringCoder.class, access = AccessLevel.PUBLISH_SUBSCRIBE)
     private String name;
 
-    @Attribute(name = "type", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
+    @Attribute(name = "type", coder = HLAunicodeStringCoder.class, access = AccessLevel.PUBLISH_SUBSCRIBE)
     private String type;
 
     @Attribute(name = "status", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
     private String status;
 
-    @Attribute(name = "parent_reference_frame", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
+    @Attribute(name = "parent_reference_frame", coder = HLAunicodeStringCoder.class, access = AccessLevel.PUBLISH_SUBSCRIBE)
     private String parentReferenceFrame;
 
-    @Attribute(name = "state",  coder = SpaceTimeCoordinateStateCoder.class, access = AccessLevel.NONE)
+    @Attribute(name = "state",  coder = SpaceTimeCoordinateStateCoder.class, access = AccessLevel.PUBLISH_SUBSCRIBE)
     private SpaceTimeCoordinateState state;
 
     @Attribute(name = "acceleration", coder = Vector3DCoder.class, access = AccessLevel.NONE)
@@ -82,6 +88,14 @@ public class PhysicalEntity extends UpdatableInstance {
         this.rotationalAcceleration = Vector3D.of(0, 0, 0);
         this.centerOfMass = Vector3D.of(0, 0, 0);
         this.bodyWrtStructural = Quaternion.of(0, 0, 0, 0);
+    }
+
+    private PhysicalEntity(String name, String type, String status, String parentReferenceFrame, SpaceTimeCoordinateState state) {
+        this.name = name;
+        this.type = type;
+        this.status = status;
+        this.parentReferenceFrame = parentReferenceFrame;
+        this.state = state;
     }
 
     public String getName() {
@@ -154,5 +168,51 @@ public class PhysicalEntity extends UpdatableInstance {
 
     public void setBodyWrtStructural(Quaternion bodyWrtStructural) {
         this.bodyWrtStructural = bodyWrtStructural;
+    }
+
+    static class Builder {
+        private String name;
+        private String type;
+        private String status;
+        private String parentReferenceFrame;
+        private SpaceTimeCoordinateState state;
+
+        private Builder() {}
+
+        public Builder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder withType(String type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder withStatus(String status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder withParentReferenceFrame(String parentReferenceFrame) {
+            this.parentReferenceFrame = parentReferenceFrame;
+            return this;
+        }
+
+        public Builder withState(SpaceTimeCoordinateState state) {
+            this.state = state;
+            return this;
+        }
+
+        private void validate() {
+            if (name == null || type == null || status == null || parentReferenceFrame == null || state == null) {
+                throw new IllegalArgumentException("Failed to build PhysicalEntity object because one or more fields were not initialized.");
+            }
+        }
+
+        public PhysicalEntity build() {
+            validate();
+            return new PhysicalEntity(name, type, status, parentReferenceFrame, state);
+        }
     }
 }

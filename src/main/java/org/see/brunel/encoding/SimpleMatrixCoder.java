@@ -28,7 +28,7 @@
  *
  */
 
-package uk.ac.brunel.encoding;
+package org.see.brunel.encoding;
 
 import hla.rti1516_2025.encoding.DecoderException;
 import hla.rti1516_2025.encoding.EncoderFactory;

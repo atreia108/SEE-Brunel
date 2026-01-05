@@ -28,53 +28,37 @@
  *
  */
 
-package uk.ac.brunel.models;
+package org.see.brunel.types;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
-import org.see.skf.annotations.Attribute;
-import org.see.skf.annotations.ObjectClass;
-import org.see.skf.impl.encoding.HLAunicodeStringCoder;
-import org.see.skf.model.AccessLevel;
-import org.see.skf.model.objects.UpdatableInstance;
-import uk.ac.brunel.encoding.QuaternionCoder;
-import uk.ac.brunel.encoding.Vector3DCoder;
 
-@ObjectClass(name = "HLAobjectRoot.PhysicalInterface")
-public class PhysicalInterface extends UpdatableInstance {
-    @Attribute(name = "name", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
-    private String name;
-
-    @Attribute(name = "parent_name", coder = HLAunicodeStringCoder.class, access = AccessLevel.NONE)
-    private String parentName;
-
-    @Attribute(name = "position", coder = Vector3DCoder.class, access = AccessLevel.NONE)
+public class SpaceTimeCoordinateState {
+    // Reference frame translation component.
     private Vector3D position;
+    private Vector3D velocity;
 
-    @Attribute(name = "attitude", coder = QuaternionCoder.class, access = AccessLevel.NONE)
-    private Quaternion attitude;
+    // Reference frame rotation component.
+    private Quaternion attitudeQuaternion;
+    private Vector3D angularVelocity;
 
-    public PhysicalInterface() {
-        this.name = "";
-        this.parentName = "";
-        this.position = Vector3D.of(0, 0, 0);
-        this.attitude = Quaternion.of(0, 0, 0, 0);
+    // Simulated physical time component.
+    private double time;
+
+    public SpaceTimeCoordinateState() {
+        position = Vector3D.of(0, 0, 0);
+        velocity = Vector3D.of(0, 0, 0);
+        attitudeQuaternion = Quaternion.of(0, 0, 0, 0);
+        angularVelocity = Vector3D.of(0, 0, 0);
+        time = 0.0;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getParentName() {
-        return parentName;
-    }
-
-    public void setParentName(String parentName) {
-        this.parentName = parentName;
+    public SpaceTimeCoordinateState(Vector3D position, Vector3D velocity, Quaternion attitudeQuaternion, Vector3D angularVelocity, double time) {
+        this.position = position;
+        this.velocity = velocity;
+        this.attitudeQuaternion = attitudeQuaternion;
+        this.angularVelocity = angularVelocity;
+        this.time = time;
     }
 
     public Vector3D getPosition() {
@@ -85,11 +69,35 @@ public class PhysicalInterface extends UpdatableInstance {
         this.position = position;
     }
 
-    public Quaternion getAttitude() {
-        return attitude;
+    public Vector3D getVelocity() {
+        return velocity;
     }
 
-    public void setAttitude(Quaternion attitude) {
-        this.attitude = attitude;
+    public void setVelocity(Vector3D velocity) {
+        this.velocity = velocity;
+    }
+
+    public Quaternion getAttitudeQuaternion() {
+        return attitudeQuaternion;
+    }
+
+    public void setAttitudeQuaternion(Quaternion attitudeQuaternion) {
+        this.attitudeQuaternion = attitudeQuaternion;
+    }
+
+    public Vector3D getAngularVelocity() {
+        return angularVelocity;
+    }
+
+    public void setAngularVelocity(Vector3D angularVelocity) {
+        this.angularVelocity = angularVelocity;
+    }
+
+    public double getTime() {
+        return time;
+    }
+
+    public void setTime(double time) {
+        this.time = time;
     }
 }
