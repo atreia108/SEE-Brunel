@@ -49,7 +49,7 @@
             <version>3.7</version>
         </dependency>
 
-        <!-- HLA libraries that are NOT publicly hosted and will not be automatically resolved by Maven.
+        <!-- pRTI HLA libraries are NOT publicly hosted and will not be automatically resolved by Maven.
         Needs to be manually generated, see https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html
         for instructions on how to generate them for your local maven repository. -->
         <dependency>

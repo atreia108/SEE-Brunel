@@ -1,3 +1,33 @@
+/*-
+ * Copyright (c) 2026 Hridyanshu Aatreya
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ */
+
 package org.see.brunel.models.objects;
 
 import hla.rti1516_2025.exceptions.*;
@@ -26,11 +56,11 @@ public class Lander extends PhysicalEntity {
     private final Random rand;
     private Vector3D waypoint;
     private MissionStage missionStage;
-    private SKFederateInterface federate;
+    private final SKFederateInterface federate;
 
-    // Beware, this movement algorithm is rather choppy.
+    // Beware, this movement algorithm is very choppy.
     // It adds and subtracts the lander's current position from the target position until it's "at" the target position.
-    // Could use some serious improvement in future SEE events.
+    // Needs some serious improvement in future SEE events.
     public void move() {
         if (missionStage == MissionStage.ARRIVAL) {
             forward();
@@ -50,11 +80,12 @@ public class Lander extends PhysicalEntity {
         double y = position.getY();
         double z = position.getZ();
 
-        if (position.eq(waypoint, PRECISION_THRESHOLD) && !(getMissionStage() == MissionStage.LANDED)) {
+        if (position.eq(waypoint, PRECISION_THRESHOLD) && getMissionStage() != MissionStage.LANDED) {
             setMissionStage(MissionStage.LANDED);
             setStatus("Landed");
             announceArrival();
-            federate.updateObjectInstance(this);
+            waypoint = null;
+            return;
         }
 
         double targetX = waypoint.getX();
@@ -105,7 +136,70 @@ public class Lander extends PhysicalEntity {
     }
 
     private void reverse() {
+        SpaceTimeCoordinateState state = getState();
+        Vector3D position = state.getPosition();
+        double x = position.getX();
+        double y = position.getY();
+        double z = position.getZ();
 
+        if (position.eq(waypoint, PRECISION_THRESHOLD) && getMissionStage() != MissionStage.AWAITING_SCHEDULER_PROCESSING) {
+            setMissionStage(MissionStage.AWAITING_SCHEDULER_PROCESSING);
+            setStatus("Holding");
+            waypoint = null;
+            return;
+        }
+
+        double targetX = waypoint.getX();
+        double targetY = waypoint.getY();
+        double targetZ = waypoint.getZ();
+
+        // Adjust course on the Z axis, we've got to ascend first to the established minimum altitude before any other
+        // action.
+        if (z < MIN_Z_ALTITUDE) {
+            Vector3D deltaV = position.add(Vector3D.of(0, 0, ALT_ADJUSTMENT_SPEED));
+            state.setPosition(deltaV);
+
+            position = state.getPosition();
+            if (position.getZ() >= MIN_Z_ALTITUDE) {
+                announceDeparture();
+            }
+
+            return;
+        }
+
+        if (!horizontalAdjustmentComplete()) {
+            Vector3D deltaV;
+            double polarityXAxis = 1;
+
+            if (targetX < x) {
+                polarityXAxis = -1;
+            }
+
+            deltaV = position.add(Vector3D.of(polarityXAxis * MAX_SPEED, 0, 0));
+            state.setPosition(deltaV);
+
+            position = state.getPosition();
+            double polarityYAxis = 1;
+
+            if (targetY < y) {
+                polarityYAxis = -1;
+            }
+
+            deltaV = position.add(Vector3D.of(0, polarityYAxis * MAX_SPEED, 0));
+            state.setPosition(deltaV);
+        }
+
+        if (!verticalAdjustmentComplete()) {
+            position = state.getPosition();
+            double polarityZAxis = 1;
+
+            if (targetZ < z) {
+                polarityZAxis = -1;
+            }
+
+            Vector3D deltaV = position.add(Vector3D.of(0,0, polarityZAxis * ALT_ADJUSTMENT_SPEED));
+            state.setPosition(deltaV);
+        }
     }
 
     private boolean horizontalAdjustmentComplete() {
@@ -117,8 +211,8 @@ public class Lander extends PhysicalEntity {
         double y = position.getY();
         double targetY = waypoint.getY();
 
-        boolean withinXAxisRange = Math.abs((targetX - x)) < 10.0;
-        boolean withinYAxisRange = Math.abs((targetY - y)) < 10.0;
+        boolean withinXAxisRange = Math.abs((targetX - x)) < 15.0;
+        boolean withinYAxisRange = Math.abs((targetY - y)) < 15.0;
         if (withinXAxisRange && withinYAxisRange) {
             state.setPosition(Vector3D.of(targetX, targetY, position.getZ()));
         }
@@ -185,6 +279,10 @@ public class Lander extends PhysicalEntity {
 
     public void setMissionStage(MissionStage missionStage) {
         this.missionStage = missionStage;
+
+        if (missionStage ==  MissionStage.DEPARTURE) {
+            waypoint = randomDestination();
+        }
     }
 
     public void setWaypoint(Vector3D waypoint) {
@@ -208,11 +306,9 @@ public class Lander extends PhysicalEntity {
         setType(type);
         setStatus(status);
         setParentReferenceFrame(parentReferenceFrame);
-        // Reference to the updateObjectInstance() method so that we can call it whenever updated attributes have to be
-        // shared. Beats having to store the federate object itself since none of its other features are used in here.
         this.federate = federate;
 
-        // Place it in one of the three spawn points.
+        // The lander spawns in one of the three points - CHARLIE, FOXTROT, or ROMEO.
         getState().setPosition(randomDestination());
         missionStage = MissionStage.AWAITING_SCHEDULER_PROCESSING;
     }
