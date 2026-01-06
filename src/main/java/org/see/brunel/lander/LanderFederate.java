@@ -60,7 +60,7 @@ public class LanderFederate extends SEELateJoinerFederate {
 
     @Override
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, NotConnected, RTIinternalError, SaveInProgress {
-        createObjectInstance(lander);
+        createObjectInstance(lander, "Lander");
     }
 
     @Override

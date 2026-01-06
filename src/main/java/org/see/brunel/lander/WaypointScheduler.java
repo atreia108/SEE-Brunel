@@ -66,7 +66,6 @@ public class WaypointScheduler {
 
     void scheduleLanderArrival(String landerName, String launchPadId) {
         Lander lander = findLander(landerName);
-        System.out.println(lander.getName() + " was approved for arrival at" + launchPadId + ".");
 
         if (lander != null && waitList.contains(lander)) {
             if (launchPadId.equals("LPAD_1")) {
@@ -78,6 +77,7 @@ public class WaypointScheduler {
             }
 
             lander.setMissionStage(Lander.MissionStage.ARRIVAL);
+            lander.setStatus("Descending");
             pullFromWaitList(lander);
         }
     }
