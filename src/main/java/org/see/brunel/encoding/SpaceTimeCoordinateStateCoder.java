@@ -69,6 +69,8 @@ public class SpaceTimeCoordinateStateCoder implements Coder<SpaceTimeCoordinateS
         attitudeQuaternion = encoderFactory.createHLAfixedRecord();
         scalar = encoderFactory.createHLAfloat64LE();
         vector = encoderFactory.createHLAfixedArray(encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE());
+        attitudeQuaternion.add(scalar);
+        attitudeQuaternion.add(vector);
         rotationalState.add(attitudeQuaternion);
         rotationalState.add(angularVelocity);
 

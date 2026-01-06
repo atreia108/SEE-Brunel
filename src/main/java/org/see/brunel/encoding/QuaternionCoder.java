@@ -46,7 +46,7 @@ public class QuaternionCoder implements Coder<Quaternion> {
         coder = encoderFactory.createHLAfixedRecord();
 
         scalar = encoderFactory.createHLAfloat64LE();
-        vector = encoderFactory.createHLAfixedArray(encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE(),  encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE());
+        vector = encoderFactory.createHLAfixedArray(encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE(), encoderFactory.createHLAfloat64LE());
         coder.add(scalar);
         coder.add(vector);
     }

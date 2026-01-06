@@ -43,7 +43,11 @@ public class Vector3DCoder implements Coder<Vector3D> {
 
     public Vector3DCoder() {
         EncoderFactory encoderFactory = HLAUtilityFactory.INSTANCE.getEncoderFactory();
-        coder = encoderFactory.createHLAfixedArray();
+        coder = encoderFactory.createHLAfixedArray(
+                encoderFactory.createHLAfloat64LE(),
+                encoderFactory.createHLAfloat64LE(),
+                encoderFactory.createHLAfloat64LE()
+        );
     }
 
     @Override

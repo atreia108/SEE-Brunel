@@ -1,34 +1,29 @@
 package org.see.brunel.spaceport.ui;
 
-import org.see.brunel.spaceport.SpaceportFederate;
+import org.see.brunel.models.objects.Spaceport;
 
 import javax.swing.*;
 
 public class CreateMessageFrame extends JFrame {
-    private final SpaceportFederate federate;
-
-    public CreateMessageFrame(SpaceportFederate federate) {
+    public CreateMessageFrame(Spaceport spaceport) {
         super();
-        this.federate = federate;
 
-        setTitle("Create Message");
+        setTitle("Create message");
         setSize(500, 200);
         setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
-
         JPanel form = new JPanel(new SpringLayout());
+
         JLabel receiverLabel = new JLabel("Receiver: ", SwingConstants.TRAILING);
         JTextField receiverTextField = new JTextField();
         receiverLabel.setLabelFor(receiverTextField);
         form.add(receiverLabel);
         form.add(receiverTextField);
 
-        JLabel messageTypeLabel = new JLabel("Type: ", SwingConstants.TRAILING);
-        JComboBox<FederateMessageType> messageTypeComboBox = new JComboBox<>(
-                new FederateMessageType[] {
-                        FederateMessageType.BRUNEL_SPACEPORT_CABLECAR_LANDER_TOUCHDOWN,
-                        FederateMessageType.BRUNEL_SPACEPORT_LANDER_REQUEST_DEPARTURE
-                }
-        );
+        JLabel messageTypeLabel = new JLabel("Message: ", SwingConstants.TRAILING);
+        JComboBox<FederateMessageType> messageTypeComboBox = new JComboBox<>(new FederateMessageType[]{
+                FederateMessageType.BRUNEL_SPACEPORT_CABLECAR_LANDER_TOUCHDOWN,
+                FederateMessageType.BRUNEL_SPACEPORT_LANDER_REQUEST_DEPARTURE
+        });
         messageTypeLabel.setLabelFor(messageTypeComboBox);
         form.add(messageTypeLabel);
         form.add(messageTypeComboBox);
@@ -40,9 +35,10 @@ public class CreateMessageFrame extends JFrame {
         form.add(contentTextField);
 
         JButton sendButton = new JButton("Send message");
+
         sendButton.addActionListener(e -> {
             if (!receiverTextField.getText().isEmpty() && messageTypeComboBox.getSelectedItem() != null && !contentTextField.getText().isEmpty()) {
-                boolean rtiOperation = federate.dispatchMessage(receiverTextField.getText(), messageTypeComboBox.getSelectedItem().toString(), contentTextField.getText());
+                boolean rtiOperation = spaceport.dispatchMessage(receiverTextField.getText(), messageTypeComboBox.getSelectedItem().toString(), contentTextField.getText());
 
                 if (rtiOperation) {
                     JOptionPane.showMessageDialog(null,
@@ -68,7 +64,6 @@ public class CreateMessageFrame extends JFrame {
 
         add(form);
         add(sendButton);
-
         SpringUtilities.makeCompactGrid(form, 3, 2, 10, 10, 10, 10);
     }
 }

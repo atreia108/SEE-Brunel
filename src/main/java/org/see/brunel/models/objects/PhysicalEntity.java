@@ -44,13 +44,6 @@ import org.see.skf.model.objects.UpdatableObjectInstance;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class PhysicalEntity extends UpdatableObjectInstance {
-    private static final Vector3D LAUNCH_PAD_1 = Vector3D.of(100.2, 430.0, -5587.0);
-    private static final Vector3D LAUNCH_PAD_2 = Vector3D.of(100.0, 400.0, -5587.0);
-
-    private static final Vector3D POINT_CHARLIE = Vector3D.of(-500.0, -200.0, -5200.0);
-    private static final Vector3D POINT_FOXTROT = Vector3D.of(600.0, 500.0, -4900.0);
-    private static final Vector3D POINT_ROMEO = Vector3D.of(400.0, -100.0, -5000.0);
-
     @Attribute(name = "name", coder = HLAunicodeStringCoder.class, access = AccessLevel.PUBLISH_SUBSCRIBE)
     private String name;
 
@@ -88,14 +81,6 @@ public class PhysicalEntity extends UpdatableObjectInstance {
         this.rotationalAcceleration = Vector3D.of(0, 0, 0);
         this.centerOfMass = Vector3D.of(0, 0, 0);
         this.bodyWrtStructural = Quaternion.of(0, 0, 0, 0);
-    }
-
-    private PhysicalEntity(String name, String type, String status, String parentReferenceFrame, SpaceTimeCoordinateState state) {
-        this.name = name;
-        this.type = type;
-        this.status = status;
-        this.parentReferenceFrame = parentReferenceFrame;
-        this.state = state;
     }
 
     public String getName() {
@@ -168,51 +153,5 @@ public class PhysicalEntity extends UpdatableObjectInstance {
 
     public void setBodyWrtStructural(Quaternion bodyWrtStructural) {
         this.bodyWrtStructural = bodyWrtStructural;
-    }
-
-    static class Builder {
-        private String name;
-        private String type;
-        private String status;
-        private String parentReferenceFrame;
-        private SpaceTimeCoordinateState state;
-
-        private Builder() {}
-
-        public Builder withName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Builder withType(String type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder withStatus(String status) {
-            this.status = status;
-            return this;
-        }
-
-        public Builder withParentReferenceFrame(String parentReferenceFrame) {
-            this.parentReferenceFrame = parentReferenceFrame;
-            return this;
-        }
-
-        public Builder withState(SpaceTimeCoordinateState state) {
-            this.state = state;
-            return this;
-        }
-
-        private void validate() {
-            if (name == null || type == null || status == null || parentReferenceFrame == null || state == null) {
-                throw new IllegalArgumentException("Failed to build PhysicalEntity object because one or more fields were not initialized.");
-            }
-        }
-
-        public PhysicalEntity build() {
-            validate();
-            return new PhysicalEntity(name, type, status, parentReferenceFrame, state);
-        }
     }
 }
