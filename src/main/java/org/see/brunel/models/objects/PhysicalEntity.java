@@ -34,13 +34,13 @@ import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
 import org.see.skf.annotations.Attribute;
 import org.see.skf.annotations.ObjectClass;
-import org.see.skf.impl.encoding.HLAunicodeStringCoder;
-import org.see.skf.model.AccessLevel;
+import org.see.skf.util.encoding.HLAunicodeStringCoder;
+import org.see.skf.runtime.AccessLevel;
 import org.see.brunel.encoding.QuaternionCoder;
 import org.see.brunel.encoding.SpaceTimeCoordinateStateCoder;
 import org.see.brunel.encoding.Vector3DCoder;
 import org.see.brunel.types.SpaceTimeCoordinateState;
-import org.see.skf.model.objects.UpdatableObjectInstance;
+import org.see.skf.core.UpdatableObjectInstance;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class PhysicalEntity extends UpdatableObjectInstance {

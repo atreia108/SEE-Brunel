@@ -32,11 +32,11 @@ package org.see.brunel.models.objects;
 
 import org.see.skf.annotations.Attribute;
 import org.see.skf.annotations.ObjectClass;
-import org.see.skf.impl.encoding.HLAunicodeStringCoder;
-import org.see.skf.model.AccessLevel;
+import org.see.skf.util.encoding.HLAunicodeStringCoder;
+import org.see.skf.runtime.AccessLevel;
 import org.see.brunel.encoding.SpaceTimeCoordinateStateCoder;
 import org.see.brunel.types.SpaceTimeCoordinateState;
-import org.see.skf.model.objects.UpdatableObjectInstance;
+import org.see.skf.core.UpdatableObjectInstance;
 
 @ObjectClass(name = "HLAobjectRoot.ReferenceFrame")
 public class ReferenceFrame extends UpdatableObjectInstance {

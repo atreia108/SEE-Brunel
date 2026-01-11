@@ -32,8 +32,8 @@ package org.see.brunel.models.interactions;
 
 import org.see.skf.annotations.InteractionClass;
 import org.see.skf.annotations.Parameter;
-import org.see.skf.impl.encoding.HLAunicodeStringCoder;
-import org.see.skf.model.AccessLevel;
+import org.see.skf.util.encoding.HLAunicodeStringCoder;
+import org.see.skf.runtime.AccessLevel;
 
 @InteractionClass(name = "HLAinteractionRoot.FederateMessage", access = AccessLevel.PUBLISH_SUBSCRIBE)
 public class FederateMessage {
