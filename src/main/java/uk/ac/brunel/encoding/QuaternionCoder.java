@@ -21,7 +21,7 @@
  If not, see http://http://www.gnu.org/licenses/
  *****************************************************************/
 
-package org.see.baseplate.encoding;
+package uk.ac.brunel.encoding;
 
 import hla.rti1516_2025.encoding.*;
 import org.apache.commons.numbers.quaternion.Quaternion;

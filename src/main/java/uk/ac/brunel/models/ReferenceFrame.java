@@ -21,10 +21,10 @@
  If not, see http://http://www.gnu.org/licenses/
  *****************************************************************/
 
-package org.see.baseplate.models;
+package uk.ac.brunel.models;
 
-import org.see.baseplate.encoding.SpaceTimeCoordinateStateCoder;
-import org.see.baseplate.types.SpaceTimeCoordinateState;
+import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
+import uk.ac.brunel.types.SpaceTimeCoordinateState;
 import org.see.skf.annotations.Attribute;
 import org.see.skf.annotations.ObjectClass;
 import org.see.skf.core.PropertyChangeSubject;

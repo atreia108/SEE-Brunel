@@ -21,24 +21,21 @@
  If not, see http://http://www.gnu.org/licenses/
  *****************************************************************/
 
-package org.see.baseplate.models;
+package uk.ac.brunel.models;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
-import org.ejml.simple.SimpleMatrix;
-import org.see.baseplate.encoding.QuaternionCoder;
-import org.see.baseplate.encoding.SimpleMatrixCoder;
-import org.see.baseplate.encoding.SpaceTimeCoordinateStateCoder;
-import org.see.baseplate.encoding.Vector3DCoder;
-import org.see.baseplate.types.SpaceTimeCoordinateState;
+import uk.ac.brunel.encoding.QuaternionCoder;
+import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
+import uk.ac.brunel.encoding.Vector3DCoder;
+import uk.ac.brunel.types.SpaceTimeCoordinateState;
 import org.see.skf.annotations.Attribute;
 import org.see.skf.annotations.ObjectClass;
 import org.see.skf.core.PropertyChangeSubject;
-import org.see.skf.util.encoding.HLAfloat64LECoder;
 import org.see.skf.util.encoding.HLAunicodeStringCoder;
 
-@ObjectClass(name = "HLAobjectRoot.PhysicalEntity.DynamicalEntity")
-public class DynamicalEntity extends PropertyChangeSubject {
+@ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
+public class PhysicalEntity extends PropertyChangeSubject {
     @Attribute(name = "name", coder = HLAunicodeStringCoder.class)
     private String name;
 
@@ -51,7 +48,7 @@ public class DynamicalEntity extends PropertyChangeSubject {
     @Attribute(name = "parent_reference_frame", coder = HLAunicodeStringCoder.class)
     private String parentReferenceFrame;
 
-    @Attribute(name = "state",  coder = SpaceTimeCoordinateStateCoder.class)
+    @Attribute(name = "state", coder = SpaceTimeCoordinateStateCoder.class)
     private SpaceTimeCoordinateState state;
 
     @Attribute(name = "acceleration", coder = Vector3DCoder.class)
@@ -66,25 +63,7 @@ public class DynamicalEntity extends PropertyChangeSubject {
     @Attribute(name = "body_wrt_structural", coder = QuaternionCoder.class)
     private Quaternion bodyWrtStructural;
 
-    @Attribute(name = "force", coder = Vector3DCoder.class)
-    private Vector3D force;
-
-    @Attribute(name = "torque", coder = Vector3DCoder.class)
-    private Vector3D torque;
-
-    @Attribute(name = "mass", coder = HLAfloat64LECoder.class)
-    private double mass;
-
-    @Attribute(name = "mass_rate", coder = HLAfloat64LECoder.class)
-    private double massRate;
-
-    @Attribute(name = "inertia", coder = SimpleMatrixCoder.class)
-    private SimpleMatrix inertia;
-
-    @Attribute(name = "inertia_rate", coder = SimpleMatrixCoder.class)
-    private SimpleMatrix inertiaRate;
-
-    public DynamicalEntity() {
+    public PhysicalEntity() {
         this.name = "";
         this.type = "";
         this.status = "";
@@ -94,12 +73,6 @@ public class DynamicalEntity extends PropertyChangeSubject {
         this.rotationalAcceleration = Vector3D.of(0, 0, 0);
         this.centerOfMass = Vector3D.of(0, 0, 0);
         this.bodyWrtStructural = Quaternion.of(0, 0, 0, 0);
-        force = Vector3D.of(0, 0, 0);
-        torque = Vector3D.of(0, 0, 0);
-        mass = 0.0;
-        massRate = 0.0;
-        inertia = new SimpleMatrix(3, 3);
-        inertiaRate = new SimpleMatrix(3, 3);
     }
 
     public String getName() {
@@ -172,53 +145,5 @@ public class DynamicalEntity extends PropertyChangeSubject {
 
     public void setBodyWrtStructural(Quaternion bodyWrtStructural) {
         this.bodyWrtStructural = bodyWrtStructural;
-    }
-
-    public Vector3D getForce() {
-        return force;
-    }
-
-    public void setForce(Vector3D force) {
-        this.force = force;
-    }
-
-    public Vector3D getTorque() {
-        return torque;
-    }
-
-    public void setTorque(Vector3D torque) {
-        this.torque = torque;
-    }
-
-    public double getMass() {
-        return mass;
-    }
-
-    public void setMass(double mass) {
-        this.mass = mass;
-    }
-
-    public double getMassRate() {
-        return massRate;
-    }
-
-    public void setMassRate(double massRate) {
-        this.massRate = massRate;
-    }
-
-    public SimpleMatrix getInertia() {
-        return inertia;
-    }
-
-    public void setInertia(SimpleMatrix inertia) {
-        this.inertia = inertia;
-    }
-
-    public SimpleMatrix getInertiaRate() {
-        return inertiaRate;
-    }
-
-    public void setInertiaRate(SimpleMatrix inertiaRate) {
-        this.inertiaRate = inertiaRate;
     }
 }

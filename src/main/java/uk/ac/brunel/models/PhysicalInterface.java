@@ -21,12 +21,12 @@
  If not, see http://http://www.gnu.org/licenses/
  *****************************************************************/
 
-package org.see.baseplate.models;
+package uk.ac.brunel.models;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
-import org.see.baseplate.encoding.QuaternionCoder;
-import org.see.baseplate.encoding.Vector3DCoder;
+import uk.ac.brunel.encoding.QuaternionCoder;
+import uk.ac.brunel.encoding.Vector3DCoder;
 import org.see.skf.annotations.Attribute;
 import org.see.skf.annotations.ObjectClass;
 import org.see.skf.core.PropertyChangeSubject;

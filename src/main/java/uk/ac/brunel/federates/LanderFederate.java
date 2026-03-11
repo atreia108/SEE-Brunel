@@ -21,7 +21,7 @@
  If not, see http://http://www.gnu.org/licenses/
  *****************************************************************/
 
-package org.see.baseplate;
+package uk.ac.brunel.federates;
 
 import hla.rti1516_2025.exceptions.*;
 import org.see.skf.conf.FederateConfiguration;
@@ -30,10 +30,10 @@ import org.see.skf.core.SEELateJoinerFederate;
 
 import java.io.File;
 
-public class ExampleFederate extends SEELateJoinerFederate {
-    private static final File confFile = new File("src/main/resources/example_federate.conf");
+public class LanderFederate extends SEELateJoinerFederate {
+    private static final File confFile = new File("src/main/resources/lander.conf");
 
-    public ExampleFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
+    public LanderFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
         super(federateAmbassador, federateConfiguration);
     }
 
@@ -57,7 +57,7 @@ public class ExampleFederate extends SEELateJoinerFederate {
 
     public static void main(String[] args) {
         FederateConfiguration config = FederateConfiguration.Factory.create(confFile);
-        ExampleFederate federate = new ExampleFederate(new SEEFederateAmbassador(), config);
+        LanderFederate federate = new LanderFederate(new SEEFederateAmbassador(), config);
         federate.configureAndStart();
     }
 }
