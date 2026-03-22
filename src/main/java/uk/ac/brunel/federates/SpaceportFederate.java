@@ -27,6 +27,8 @@ import hla.rti1516_2025.exceptions.*;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
+import uk.ac.brunel.models.DynamicalEntity;
+import uk.ac.brunel.models.PhysicalEntity;
 
 import java.io.File;
 
@@ -42,6 +44,9 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         // Publish/Subscribe object and interaction classes here using methods inherited from the late joiner class.
         // Register the appropriate event listeners just before or at this stage to be notified when a remote object
         // instance is created or a certain interaction is received.
+        publishObjectClass(PhysicalEntity.class);
+        subscribeObjectClass(PhysicalEntity.class);
+        publishObjectClass(DynamicalEntity.class);
     }
 
     @Override

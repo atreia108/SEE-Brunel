@@ -8,8 +8,8 @@
     <artifactId>baseplate</artifactId>
     <version>2026.0-SNAPSHOT</version>
 
-    <name>SEE-Baseplate</name>
-    <url>https://www.github.com/SMASH-Lab/SEE-Baseplate</url>
+    <name>SEE-Brunel</name>
+    <url>https://www.github.com/atreia108/SEE-Brunel</url>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -50,22 +50,28 @@
         <dependency>
             <groupId>se.pitch</groupId>
             <artifactId>prticore</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.1</version>
         </dependency>
         <dependency>
             <groupId>se.pitch</groupId>
             <artifactId>prti1516-hla4</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.1</version>
         </dependency>
         <dependency>
             <groupId>se.pitch</groupId>
             <artifactId>booster1516</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.see</groupId>
             <artifactId>skf</artifactId>
             <version>2.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.14.3</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
