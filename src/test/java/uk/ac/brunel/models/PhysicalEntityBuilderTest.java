@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import uk.ac.brunel.exceptions.IncompleteObjectDataException;
+import uk.ac.brunel.federates.MSGFederateAmbassador;
 import uk.ac.brunel.federates.LanderFederate;
 import uk.ac.brunel.federates.SpaceportFederate;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
@@ -14,6 +15,10 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ *
+ * @author Hridyanshu Aatreya
+ */
 class PhysicalEntityBuilderTest {
     private static FederateConfiguration config;
 
@@ -100,7 +105,7 @@ class PhysicalEntityBuilderTest {
         /* Name field is missing */
         assertThrows(IncompleteObjectDataException.class, () -> {
             new Spaceport.Builder()
-                    .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
+                    .federate(new SpaceportFederate(new MSGFederateAmbassador(), config))
                     .parentReferenceFrame("AitkenLocalBasinFixed")
                     .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
                     .build();
@@ -119,7 +124,7 @@ class PhysicalEntityBuilderTest {
         assertThrows(IncompleteObjectDataException.class, () -> {
             new Spaceport.Builder()
                     .name("Brunel_Spaceport")
-                    .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
+                    .federate(new SpaceportFederate(new MSGFederateAmbassador(), config))
                     .parentReferenceFrame("AitkenLocalBasinFixed")
                     .build();
         });
@@ -128,7 +133,7 @@ class PhysicalEntityBuilderTest {
         assertDoesNotThrow(() -> {
             new Spaceport.Builder()
                     .name("Brunel_Spaceport")
-                    .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
+                    .federate(new SpaceportFederate(new MSGFederateAmbassador(), config))
                     .parentReferenceFrame("AitkenBasinLocalFixed")
                     .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
                     .build();

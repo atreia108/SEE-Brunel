@@ -26,6 +26,7 @@ package uk.ac.brunel.models;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
 import org.ejml.simple.SimpleMatrix;
+import org.see.skf.runtime.ScopeLevel;
 import uk.ac.brunel.encoding.QuaternionCoder;
 import uk.ac.brunel.encoding.SimpleMatrixCoder;
 import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
@@ -72,10 +73,10 @@ public class DynamicalEntity extends PropertyChangeSubject {
     @Attribute(name = "torque", coder = Vector3DCoder.class)
     private Vector3D torque;
 
-    @Attribute(name = "mass", coder = HLAfloat64LECoder.class)
+    @Attribute(name = "mass", coder = HLAfloat64LECoder.class, scope = ScopeLevel.NONE)
     private double mass;
 
-    @Attribute(name = "mass_rate", coder = HLAfloat64LECoder.class)
+    @Attribute(name = "mass_rate", coder = HLAfloat64LECoder.class, scope = ScopeLevel.NONE)
     private double massRate;
 
     @Attribute(name = "inertia", coder = SimpleMatrixCoder.class)

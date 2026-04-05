@@ -5,9 +5,10 @@ import uk.ac.brunel.exceptions.IncompleteObjectDataException;
 import uk.ac.brunel.federates.LanderFederate;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
-@ObjectClass(name = "HLAobjectRoot.DynamicalEntity")
+@ObjectClass(name = "HLAobjectRoot.PhysicalEntity.DynamicalEntity")
 public class Lander extends DynamicalEntity {
     private final LanderFederate federate;
+    private FlightStage flightStage;
 
     public Lander(Builder builder) {
         this.federate = builder.ldFederate;
@@ -15,6 +16,15 @@ public class Lander extends DynamicalEntity {
         setName(builder.ldName);
         setParentReferenceFrame(builder.ldParentReferenceFrame);
         setState(builder.ldState);
+
+        flightStage = FlightStage.APPROACHING;
+    }
+
+    private enum FlightStage {
+        APPROACHING,
+        LANDING,
+        ASCENT,
+        IDLE
     }
 
     public static class Builder {

@@ -27,15 +27,26 @@ import hla.rti1516_2025.exceptions.*;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
+import uk.ac.brunel.models.DynamicalEntity;
+import uk.ac.brunel.models.Lander;
 import uk.ac.brunel.models.PhysicalEntity;
+import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 import java.io.File;
+import java.util.concurrent.CopyOnWriteArraySet;
 
+/**
+ * Lander Federate
+ * @author Hridyanshu Aatreya
+ */
 public class LanderFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/lander.conf");
 
+    private final CopyOnWriteArraySet<Lander> landers;
+
     public LanderFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
         super(federateAmbassador, federateConfiguration);
+        landers = new CopyOnWriteArraySet<>();
     }
 
     @Override
@@ -43,12 +54,26 @@ public class LanderFederate extends SEELateJoinerFederate {
         // Publish/Subscribe object and interaction classes here using methods inherited from the late joiner class.
         // Register the appropriate event listeners just before or at this stage to be notified when a remote object
         // instance is created or a certain interaction is received.
+        publishObjectClass(DynamicalEntity.class);
         subscribeObjectClass(PhysicalEntity.class);
     }
 
     @Override
-    public void declareObjectInstances() {
+    public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
+
+        String baseNameSequence = "brunel_lander_";
+        for (int i = 1; i < 4; ++i) {
+            Lander l = new Lander.Builder()
+                    .federate(this)
+                    .name(baseNameSequence + i)
+                    .parentReferenceFrame("AitkenBasinLocalFixed")
+                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
+                    .build();
+
+            registerObjectInstance(l, l.getName());
+            landers.add(l);
+        }
     }
 
     @Override

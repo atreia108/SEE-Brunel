@@ -41,7 +41,7 @@ public class SpaceTimeCoordinateState {
     public SpaceTimeCoordinateState() {
         position = Vector3D.of(0, 0, 0);
         velocity = Vector3D.of(0, 0, 0);
-        attitudeQuaternion = Quaternion.of(0, 0, 0, 0);
+        attitudeQuaternion = Quaternion.of(1, 0, 0, 0);
         angularVelocity = Vector3D.of(0, 0, 0);
         time = 0.0;
     }

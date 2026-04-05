@@ -25,18 +25,27 @@ package uk.ac.brunel.federates;
 
 import hla.rti1516_2025.exceptions.*;
 import org.see.skf.conf.FederateConfiguration;
-import org.see.skf.core.SEEFederateAmbassador;
-import org.see.skf.core.SEELateJoinerFederate;
+import uk.ac.brunel.LanderListener;
 import uk.ac.brunel.models.DynamicalEntity;
 import uk.ac.brunel.models.PhysicalEntity;
+import uk.ac.brunel.models.Spaceport;
+import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 import java.io.File;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-public class SpaceportFederate extends SEELateJoinerFederate {
+/**
+ * Spaceport Federate
+ * @author Hridyanshu Aatreya
+ */
+public class SpaceportFederate extends MSGFederate {
     private static final File confFile = new File("src/main/resources/spaceport.conf");
 
-    public SpaceportFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
+    private final CopyOnWriteArraySet<Spaceport> spaceports;
+
+    public SpaceportFederate(MSGFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
         super(federateAmbassador, federateConfiguration);
+        spaceports = new CopyOnWriteArraySet<>();
     }
 
     @Override
@@ -50,8 +59,27 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     }
 
     @Override
-    public void declareObjectInstances() {
+    public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
+
+        String baseNameSequence = "brunel_spaceport_";
+        for (int i = 1; i < 4; ++i) {
+            Spaceport s = new Spaceport.Builder()
+                    .federate(this)
+                    .name(baseNameSequence + i)
+                    .parentReferenceFrame("AitkenBasinLocalFixed")
+                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState()) // TODO - Set initial spawn points.
+                    .build();
+
+            registerObjectInstance(s, s.getName());
+            spaceports.add(s);
+        }
+
+        registerEventListeners();
+    }
+
+    private void registerEventListeners() {
+        addInteractionListener(new LanderListener(spaceports));
     }
 
     @Override
@@ -62,7 +90,7 @@ public class SpaceportFederate extends SEELateJoinerFederate {
 
     public static void main(String[] args) {
         FederateConfiguration config = FederateConfiguration.Factory.create(confFile);
-        SpaceportFederate federate = new SpaceportFederate(new SEEFederateAmbassador(), config);
+        SpaceportFederate federate = new SpaceportFederate(new MSGFederateAmbassador(), config);
         federate.configureAndStart();
     }
 }
