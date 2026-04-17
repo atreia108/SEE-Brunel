@@ -25,6 +25,8 @@ package uk.ac.brunel.federates;
 
 import hla.rti1516_2025.exceptions.*;
 import org.see.skf.conf.FederateConfiguration;
+import org.see.skf.core.SEEFederateAmbassador;
+import org.see.skf.core.SEELateJoinerFederate;
 import uk.ac.brunel.LanderListener;
 import uk.ac.brunel.models.DynamicalEntity;
 import uk.ac.brunel.models.PhysicalEntity;
@@ -38,12 +40,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * Spaceport Federate
  * @author Hridyanshu Aatreya
  */
-public class SpaceportFederate extends MSGFederate {
+public class SpaceportFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/spaceport.conf");
 
     private final CopyOnWriteArraySet<Spaceport> spaceports;
 
-    public SpaceportFederate(MSGFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
+    public SpaceportFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
         super(federateAmbassador, federateConfiguration);
         spaceports = new CopyOnWriteArraySet<>();
     }
@@ -90,7 +92,7 @@ public class SpaceportFederate extends MSGFederate {
 
     public static void main(String[] args) {
         FederateConfiguration config = FederateConfiguration.Factory.create(confFile);
-        SpaceportFederate federate = new SpaceportFederate(new MSGFederateAmbassador(), config);
+        SpaceportFederate federate = new SpaceportFederate(new SEEFederateAmbassador(), config);
         federate.configureAndStart();
     }
 }

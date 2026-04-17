@@ -25,6 +25,7 @@ package uk.ac.brunel.models;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
+import org.see.skf.runtime.ScopeLevel;
 import uk.ac.brunel.encoding.QuaternionCoder;
 import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
 import uk.ac.brunel.encoding.Vector3DCoder;
@@ -36,10 +37,10 @@ import org.see.skf.util.encoding.HLAunicodeStringCoder;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class PhysicalEntity extends PropertyChangeSubject {
-    @Attribute(name = "name", coder = HLAunicodeStringCoder.class)
+    @Attribute(name = "name", coder = HLAunicodeStringCoder.class, scope = ScopeLevel.PUBLISH)
     private String name;
 
-    @Attribute(name = "type", coder = HLAunicodeStringCoder.class)
+    @Attribute(name = "type", coder = HLAunicodeStringCoder.class, scope = ScopeLevel.SUBSCRIBE)
     private String type;
 
     @Attribute(name = "status", coder = HLAunicodeStringCoder.class)

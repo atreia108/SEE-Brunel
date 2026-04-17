@@ -5,26 +5,25 @@ import org.see.skf.annotations.Parameter;
 import org.see.skf.util.encoding.HLAunicodeStringCoder;
 
 /**
- * Implementation of the MSGLandingRequest interaction class from the MSG FOM.
- * Purpose: Sent by a lander wants to obtain clearance to land at a certain spaceport while on its approach to the
- * lunar surface.
+ * Implementation of the MSGLanderTakeoff interaction class from the MSG FOM.
+ * Purpose: Sent by a lander once it has departed from a spaceport.
  *
  * @author Hridyanshu Aatreya
  */
-@InteractionClass(name = "HLAinteractionRoot.MSGLanderInteractionRoot.MSGLandingRequest")
-public final class MSGLandingRequest {
+@InteractionClass(name = "HLAinteractionRoot.MSGLanderInteractionRoot.MSGLanderTakeoff")
+public class MSGLanderTakeoff {
     @Parameter(name = "LanderName", coder = HLAunicodeStringCoder.class)
     private String landerName;
 
     @Parameter(name = "SpaceportName", coder = HLAunicodeStringCoder.class)
     private String spaceportName;
 
-    public MSGLandingRequest() {
+    public MSGLanderTakeoff() {
         landerName = "";
         spaceportName = "";
     }
 
-    public MSGLandingRequest(String landerName, String spaceportName) {
+    public MSGLanderTakeoff(String landerName, String spaceportName) {
         this.landerName = landerName;
         this.spaceportName = spaceportName;
     }
