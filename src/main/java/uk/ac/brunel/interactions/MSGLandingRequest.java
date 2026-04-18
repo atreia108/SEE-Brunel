@@ -6,42 +6,42 @@ import org.see.skf.util.encoding.HLAunicodeStringCoder;
 
 /**
  * Implementation of the MSGLandingRequest interaction class from the MSG FOM.
- * Purpose: Sent by a lander wants to obtain clearance to land at a certain spaceport while on its approach to the
- * lunar surface.
+ * Purpose: While on its final approach to the lunar surface, a lander sends this interaction to obtain clearance to
+ * land at a specific spaceport.
  *
  * @author Hridyanshu Aatreya
  */
 @InteractionClass(name = "HLAinteractionRoot.MSGLanderInteractionRoot.MSGLandingRequest")
 public final class MSGLandingRequest {
-    @Parameter(name = "LanderName", coder = HLAunicodeStringCoder.class)
-    private String landerName;
+    @Parameter(name = "Lander", coder = HLAunicodeStringCoder.class)
+    private String lander;
 
-    @Parameter(name = "SpaceportName", coder = HLAunicodeStringCoder.class)
-    private String spaceportName;
+    @Parameter(name = "Spaceport", coder = HLAunicodeStringCoder.class)
+    private String spaceport;
 
     public MSGLandingRequest() {
-        landerName = "";
-        spaceportName = "";
+        lander = "";
+        spaceport = "";
     }
 
-    public MSGLandingRequest(String landerName, String spaceportName) {
-        this.landerName = landerName;
-        this.spaceportName = spaceportName;
+    public MSGLandingRequest(String lander, String spaceport) {
+        this.lander = lander;
+        this.spaceport = spaceport;
     }
 
-    public String getLanderName() {
-        return landerName;
+    public String getLander() {
+        return lander;
     }
 
-    public void setLanderName(String landerName) {
-        this.landerName = landerName;
+    public void setLander(String lander) {
+        this.lander = lander;
     }
 
-    public String getSpaceportName() {
-        return spaceportName;
+    public String getSpaceport() {
+        return spaceport;
     }
 
-    public void setSpaceportName(String spaceportName) {
-        this.spaceportName = spaceportName;
+    public void setSpaceport(String spaceport) {
+        this.spaceport = spaceport;
     }
 }

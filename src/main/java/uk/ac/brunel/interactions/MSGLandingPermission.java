@@ -14,41 +14,41 @@ import uk.ac.brunel.types.OperationalVerdict;
  */
 @InteractionClass(name = "HLAinteractionRoot.MSGLanderInteractionRoot.MSGLandingPermission")
 public class MSGLandingPermission {
-    @Parameter(name = "SpaceportName", coder = HLAunicodeStringCoder.class)
-    private String spaceportName;
+    @Parameter(name = "Spaceport", coder = HLAunicodeStringCoder.class)
+    private String spaceport;
 
-    @Parameter(name = "LanderName", coder = HLAunicodeStringCoder.class)
-    private String landerName;
+    @Parameter(name = "Lander", coder = HLAunicodeStringCoder.class)
+    private String lander;
 
     @Parameter(name = "Verdict", coder = OperationalVerdictCoder.class)
     private OperationalVerdict verdict;
 
     public MSGLandingPermission() {
-        spaceportName = "";
-        landerName = "";
+        spaceport = "";
+        lander = "";
         verdict = OperationalVerdict.REJECTED;
     }
 
-    public MSGLandingPermission(String spaceportName, String landerName, OperationalVerdict verdict) {
-        this.spaceportName = spaceportName;
-        this.landerName = landerName;
+    public MSGLandingPermission(String spaceport, String lander, OperationalVerdict verdict) {
+        this.spaceport = spaceport;
+        this.lander = lander;
         this.verdict = verdict;
     }
 
-    public String getSpaceportName() {
-        return spaceportName;
+    public String getSpaceport() {
+        return spaceport;
     }
 
-    public void setSpaceportName(String spaceportName) {
-        this.spaceportName = spaceportName;
+    public void setSpaceport(String spaceport) {
+        this.spaceport = spaceport;
     }
 
-    public String getLanderName() {
-        return landerName;
+    public String getLander() {
+        return lander;
     }
 
-    public void setLanderName(String landerName) {
-        this.landerName = landerName;
+    public void setLander(String lander) {
+        this.lander = lander;
     }
 
     public OperationalVerdict getVerdict() {

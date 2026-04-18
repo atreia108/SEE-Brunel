@@ -8,7 +8,7 @@ import uk.ac.brunel.types.SpaceTimeCoordinateState;
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity.DynamicalEntity")
 public class Lander extends DynamicalEntity {
     private final LanderFederate federate;
-    private FlightStage flightStage;
+    private OperationalState operationalState;
 
     public Lander(Builder builder) {
         this.federate = builder.ldFederate;
@@ -17,10 +17,10 @@ public class Lander extends DynamicalEntity {
         setParentReferenceFrame(builder.ldParentReferenceFrame);
         setState(builder.ldState);
 
-        flightStage = FlightStage.APPROACHING;
+        operationalState = OperationalState.APPROACHING;
     }
 
-    private enum FlightStage {
+    private enum OperationalState {
         APPROACHING,
         LANDING,
         ASCENT,

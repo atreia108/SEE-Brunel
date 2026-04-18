@@ -16,7 +16,7 @@ public class LanderListener implements InteractionListener {
     public void received(Object interaction) {
         if (interaction instanceof MSGLandingRequest) {
             MSGLandingRequest landingRequest = (MSGLandingRequest) interaction;
-            String targetSpaceportName = landingRequest.getSpaceportName();
+            String targetSpaceportName = landingRequest.getSpaceport();
             Spaceport targetSpaceport = findSpaceport(targetSpaceportName);
 
             if (targetSpaceport != null) {

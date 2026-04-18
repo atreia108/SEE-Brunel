@@ -8,7 +8,7 @@ import uk.ac.brunel.types.SpaceTimeCoordinateState;
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class Spaceport extends PhysicalEntity {
     private final SpaceportFederate federate;
-    private MissionStage missionStage;
+    private OperationalState operationalState;
 
     private Spaceport(Builder builder) {
         this.federate = builder.spFederate;
@@ -17,13 +17,13 @@ public class Spaceport extends PhysicalEntity {
         setParentReferenceFrame(builder.spParentReferenceFrame);
         setState(builder.spState);
 
-        missionStage = MissionStage.IDLE;
+        operationalState = OperationalState.IDLE;
     }
 
     public synchronized void acceptLander() {
         // ...
         // If it's a no-go, send an interaction back DENYING passage.
-        missionStage = MissionStage.AWAITING_LANDER_TOUCHDOWN;
+        operationalState = OperationalState.AWAITING_LANDER_TOUCHDOWN;
     }
 
     public static class Builder {
@@ -76,7 +76,7 @@ public class Spaceport extends PhysicalEntity {
         }
     }
 
-    private enum MissionStage {
+    private enum OperationalState {
         IDLE,
         PROCESSING_CARGO,
         AWAITING_CARGO_DELIVERY,

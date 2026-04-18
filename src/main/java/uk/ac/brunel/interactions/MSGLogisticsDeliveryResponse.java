@@ -1,5 +1,6 @@
 package uk.ac.brunel.interactions;
 
+import org.see.skf.annotations.InteractionClass;
 import org.see.skf.annotations.Parameter;
 import org.see.skf.util.encoding.HLAunicodeStringCoder;
 import uk.ac.brunel.encoding.OperationalVerdictCoder;
@@ -11,29 +12,30 @@ import uk.ac.brunel.types.OperationalVerdict;
  *
  * @author Hridyanshu Aatreya
  */
+@InteractionClass(name = "HLAinteractionRoot.MSGLogisticsInteractionRoot.MSGLogisticsDeliveryResponse")
 public class MSGLogisticsDeliveryResponse {
-    @Parameter(name = "SpaceportName", coder = HLAunicodeStringCoder.class)
-    private String spaceportName;
+    @Parameter(name = "Spaceport", coder = HLAunicodeStringCoder.class)
+    private String spaceport;
 
     @Parameter(name = "Verdict", coder = OperationalVerdictCoder.class)
     private OperationalVerdict verdict;
 
     public MSGLogisticsDeliveryResponse() {
-        spaceportName = "";
+        spaceport = "";
         verdict = OperationalVerdict.REJECTED;
     }
 
-    public MSGLogisticsDeliveryResponse(String spaceportName, OperationalVerdict verdict) {
-        this.spaceportName = spaceportName;
+    public MSGLogisticsDeliveryResponse(String spaceport, OperationalVerdict verdict) {
+        this.spaceport = spaceport;
         this.verdict = verdict;
     }
 
-    public String getSpaceportName() {
-        return spaceportName;
+    public String getSpaceport() {
+        return spaceport;
     }
 
-    public void setSpaceportName(String spaceportName) {
-        this.spaceportName = spaceportName;
+    public void setSpaceport(String spaceport) {
+        this.spaceport = spaceport;
     }
 
     public OperationalVerdict getVerdict() {

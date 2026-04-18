@@ -17,31 +17,23 @@ public class MaterialMapCoder implements Coder<Map<String, Integer>> {
     private final DataElementFactory<HLAinteger32BE> integerFactory;
     private final DataElementFactory<HLAunicodeString> stringFactory;
 
-    private final HLAfixedRecord encodedMaterialMap;
-    private final HLAunicodeString encodedMaterialName;
-    private final HLAinteger32BE encodedMaterialQty;
-
     public MaterialMapCoder() {
         encoderFactory = HLAUtilityFactory.INSTANCE.getEncoderFactory();
         integerFactory = i -> encoderFactory.createHLAinteger32BE();
         stringFactory = j -> encoderFactory.createHLAunicodeString();
-
-        encodedMaterialMap = encoderFactory.createHLAfixedRecord();
-        encodedMaterialName = encoderFactory.createHLAunicodeString();
-        encodedMaterialQty = encoderFactory.createHLAinteger32BE();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Map<String, Integer> decode(byte[] buffer) throws DecoderException {
+        final HLAfixedRecord encodedMaterialMap = encoderFactory.createHLAfixedRecord();
+        HLAvariableArray<HLAunicodeString> encodedMaterialNames = encoderFactory.createHLAvariableArray(stringFactory);
+        HLAvariableArray<HLAinteger32BE> encodedMaterialQuantities = encoderFactory.createHLAvariableArray(integerFactory);
+        encodedMaterialMap.add(encodedMaterialNames);
+        encodedMaterialMap.add(encodedMaterialQuantities);
+
         encodedMaterialMap.decode(buffer);
-        encodedMaterialMap.get(0);
-
-        HLAvariableArray<HLAunicodeString> encodedMaterialNames = (HLAvariableArray<HLAunicodeString>) encodedMaterialMap.get(0);
-        HLAvariableArray<HLAinteger32BE> encodedMaterialQuantities = (HLAvariableArray<HLAinteger32BE>) encodedMaterialMap.get(1);
-
-        // We trust that the contract to keep the size of both the material name (keys) and material quantities (values)
-        // the same (as explicitly stated in the MSG FOM) was honored by other federates when attempting the following:
+        // In attempting the following, we trust that the contract to keep the size of both the material name (keys) and
+        // material quantities (values) the same (as explicitly stated in the MSG FOM) was honored by other federates:
         Map<String, Integer> decodedMaterialMap = new HashMap<>() {
         };
         for (int k = 0; k < encodedMaterialNames.size(); ++k) {
@@ -56,15 +48,23 @@ public class MaterialMapCoder implements Coder<Map<String, Integer>> {
 
     @Override
     public byte[] encode(Map<String, Integer> materialMap) {
-        HLAvariableArray<HLAunicodeString> encodedMaterialNames = encoderFactory.createHLAvariableArray(stringFactory);
-        HLAvariableArray<HLAinteger32BE> encodedMaterialQuantities = encoderFactory.createHLAvariableArray(integerFactory);
+        final HLAfixedRecord encodedMaterialMap = encoderFactory.createHLAfixedRecord();
+
+        final HLAvariableArray<HLAunicodeString> encodedMaterialNames = encoderFactory.createHLAvariableArray(stringFactory);
+        final HLAvariableArray<HLAinteger32BE> encodedMaterialQuantities = encoderFactory.createHLAvariableArray(integerFactory);
 
         for (Map.Entry<String, Integer> entry : materialMap.entrySet()) {
+            HLAunicodeString encodedMaterialName = encoderFactory.createHLAunicodeString();
+            HLAinteger32BE encodedMaterialQty = encoderFactory.createHLAinteger32BE();
+
             encodedMaterialName.setValue(entry.getKey());
             encodedMaterialQty.setValue(entry.getValue());
             encodedMaterialNames.addElement(encodedMaterialName);
             encodedMaterialQuantities.addElement(encodedMaterialQty);
         }
+
+        encodedMaterialMap.add(encodedMaterialNames);
+        encodedMaterialMap.add(encodedMaterialQuantities);
 
         return encodedMaterialMap.toByteArray();
     }
