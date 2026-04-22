@@ -5,6 +5,11 @@ import uk.ac.brunel.exceptions.IncompleteObjectDataException;
 import uk.ac.brunel.federates.SpaceportFederate;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
+/**
+ * Simulation model of a Lunar Spaceport.
+ *
+ * @author Hridyanshu Aatreya
+ */
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class Spaceport extends PhysicalEntity {
     private final SpaceportFederate federate;
@@ -78,10 +83,11 @@ public class Spaceport extends PhysicalEntity {
 
     private enum OperationalState {
         IDLE,
+        AWAITING_ROVER_ALLOCATION,
+        AWAITING_ROVER_ARRIVAL,
         PROCESSING_CARGO,
-        AWAITING_CARGO_DELIVERY,
         AWAITING_LANDER_TOUCHDOWN,
         AWAITING_LANDER_DEPARTURE,
-        REFUELING,
+        REFUELING
     }
 }

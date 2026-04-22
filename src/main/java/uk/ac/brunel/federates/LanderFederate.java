@@ -24,9 +24,11 @@
 package uk.ac.brunel.federates;
 
 import hla.rti1516_2025.exceptions.*;
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
+import uk.ac.brunel.interactions.*;
 import uk.ac.brunel.models.DynamicalEntity;
 import uk.ac.brunel.models.Lander;
 import uk.ac.brunel.models.PhysicalEntity;
@@ -42,6 +44,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class LanderFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/lander.conf");
 
+    private static final Vector3D[] SPAWN_POINTS = new Vector3D[] {
+            // Point Charlie
+            Vector3D.of(-500.0, -200.0, -5200.0),
+            // Point Foxtrot
+            Vector3D.of(600.0, 500.0, -4900.0),
+            // Point Romeo
+            Vector3D.of(400.0, -100.0, -5000.0)
+    };
+
     private final CopyOnWriteArraySet<Lander> landers;
 
     public LanderFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
@@ -50,25 +61,33 @@ public class LanderFederate extends SEELateJoinerFederate {
     }
 
     @Override
-    public void declareClasses() throws FederateNotExecutionMember, AttributeNotDefined, ObjectClassNotDefined, RestoreInProgress, NameNotFound, NotConnected, RTIinternalError, InvalidObjectClassHandle, SaveInProgress {
+    public void declareClasses() throws FederateNotExecutionMember, AttributeNotDefined, ObjectClassNotDefined, RestoreInProgress, NameNotFound, NotConnected, RTIinternalError, InvalidObjectClassHandle, SaveInProgress, InvalidInteractionClassHandle, InteractionClassNotDefined, FederateServiceInvocationsAreBeingReportedViaMOM {
         // Publish/Subscribe object and interaction classes here using methods inherited from the late joiner class.
         // Register the appropriate event listeners just before or at this stage to be notified when a remote object
         // instance is created or a certain interaction is received.
         publishObjectClass(DynamicalEntity.class);
         subscribeObjectClass(PhysicalEntity.class);
+
+        publishInteractionClass(MSGLandingRequest.class);
+        publishInteractionClass(MSGLanderTouchdown.class);
+        publishInteractionClass(MSGLanderTakeoff.class);
+
+        subscribeInteractionClass(MSGLandingPermission.class);
+        subscribeInteractionClass(MSGLanderDepartureRequest.class);
     }
 
     @Override
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
-
-        String baseNameSequence = "brunel_lander_";
-        for (int i = 1; i < 4; ++i) {
+        String landerNameSequence = "brunel_lander_";
+        for (int i = 1; i < 3; ++i) {
+            SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
+            defaultState.setPosition(SPAWN_POINTS[i]);
             Lander l = new Lander.Builder()
                     .federate(this)
-                    .name(baseNameSequence + i)
+                    .name(landerNameSequence + i)
                     .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
+                    .spaceTimeCoordinateState(defaultState)
                     .build();
 
             registerObjectInstance(l, l.getName());
@@ -80,6 +99,7 @@ public class LanderFederate extends SEELateJoinerFederate {
     public void update() {
         // This segment is run every time the simulation is updated. Any jobs this federate must perform while running
         // will go here.
+        landers.forEach(Lander::update);
     }
 
     public static void main(String[] args) {

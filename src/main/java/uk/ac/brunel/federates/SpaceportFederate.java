@@ -27,7 +27,8 @@ import hla.rti1516_2025.exceptions.*;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
-import uk.ac.brunel.LanderListener;
+import uk.ac.brunel.listeners.LanderListener;
+import uk.ac.brunel.interactions.*;
 import uk.ac.brunel.models.DynamicalEntity;
 import uk.ac.brunel.models.PhysicalEntity;
 import uk.ac.brunel.models.Spaceport;
@@ -51,13 +52,26 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     }
 
     @Override
-    public void declareClasses() throws FederateNotExecutionMember, AttributeNotDefined, ObjectClassNotDefined, RestoreInProgress, NameNotFound, NotConnected, RTIinternalError, InvalidObjectClassHandle, SaveInProgress {
+    public void declareClasses() throws FederateNotExecutionMember, AttributeNotDefined, ObjectClassNotDefined, RestoreInProgress, NameNotFound, NotConnected, RTIinternalError, InvalidObjectClassHandle, SaveInProgress, InvalidInteractionClassHandle, InteractionClassNotDefined, FederateServiceInvocationsAreBeingReportedViaMOM {
         // Publish/Subscribe object and interaction classes here using methods inherited from the late joiner class.
         // Register the appropriate event listeners just before or at this stage to be notified when a remote object
         // instance is created or a certain interaction is received.
         publishObjectClass(PhysicalEntity.class);
-        subscribeObjectClass(PhysicalEntity.class);
-        publishObjectClass(DynamicalEntity.class);
+        subscribeObjectClass(DynamicalEntity.class);
+
+        publishInteractionClass(MSGCargoPickupJob.class);
+        publishInteractionClass(MSGCargoTransferComplete.class);
+        publishInteractionClass(MSGLanderDepartureRequest.class);
+        publishInteractionClass(MSGLandingPermission.class);
+        publishInteractionClass(MSGLogisticsDeliveryRequest.class);
+
+        subscribeInteractionClass(MSGCargoPickupJobAccepted.class);
+        subscribeInteractionClass(MSGCargoPickupJobRejected.class);
+        subscribeInteractionClass(MSGCargoTransferReady.class);
+        subscribeInteractionClass(MSGLandingRequest.class);
+        subscribeInteractionClass(MSGLanderTakeoff.class);
+        subscribeInteractionClass(MSGLanderTouchdown.class);
+        subscribeInteractionClass(MSGLogisticsDeliveryResponse.class);
     }
 
     @Override

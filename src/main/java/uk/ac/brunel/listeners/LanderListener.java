@@ -1,4 +1,4 @@
-package uk.ac.brunel;
+package uk.ac.brunel.listeners;
 
 import org.see.skf.core.InteractionListener;
 import uk.ac.brunel.interactions.MSGLandingRequest;
