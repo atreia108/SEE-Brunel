@@ -24,7 +24,6 @@
 package uk.ac.brunel.federates;
 
 import hla.rti1516_2025.exceptions.*;
-import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
@@ -32,9 +31,9 @@ import uk.ac.brunel.interactions.*;
 import uk.ac.brunel.models.DynamicalEntity;
 import uk.ac.brunel.models.Lander;
 import uk.ac.brunel.models.PhysicalEntity;
-import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 import java.io.File;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -44,16 +43,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class LanderFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/lander.conf");
 
-    private static final Vector3D[] SPAWN_POINTS = new Vector3D[] {
-            // Point Charlie
-            Vector3D.of(-500.0, -200.0, -5200.0),
-            // Point Foxtrot
-            Vector3D.of(600.0, 500.0, -4900.0),
-            // Point Romeo
-            Vector3D.of(400.0, -100.0, -5000.0)
-    };
-
-    private final CopyOnWriteArraySet<Lander> landers;
+    private final Set<Lander> landers;
 
     public LanderFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
         super(federateAmbassador, federateConfiguration);
@@ -81,13 +71,10 @@ public class LanderFederate extends SEELateJoinerFederate {
         // Create all the object instances pertinent to your federate and the federation execution at large.
         String landerNameSequence = "brunel_lander_";
         for (int i = 1; i < 3; ++i) {
-            SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
-            defaultState.setPosition(SPAWN_POINTS[i]);
             Lander l = new Lander.Builder()
                     .federate(this)
                     .name(landerNameSequence + i)
                     .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .spaceTimeCoordinateState(defaultState)
                     .build();
 
             registerObjectInstance(l, l.getName());

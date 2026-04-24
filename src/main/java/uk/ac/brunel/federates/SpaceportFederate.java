@@ -78,11 +78,11 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
 
-        String baseNameSequence = "brunel_spaceport_";
+        String spaceportNameSequence = "brunel_spaceport_";
         for (int i = 1; i < 4; ++i) {
             Spaceport s = new Spaceport.Builder()
                     .federate(this)
-                    .name(baseNameSequence + i)
+                    .name(spaceportNameSequence + i)
                     .parentReferenceFrame("AitkenBasinLocalFixed")
                     .spaceTimeCoordinateState(new SpaceTimeCoordinateState()) // TODO - Set initial spawn points.
                     .build();

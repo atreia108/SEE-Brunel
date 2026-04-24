@@ -12,6 +12,11 @@ import uk.ac.brunel.types.SpaceTimeCoordinateState;
  */
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class Spaceport extends PhysicalEntity {
+    // Power load by the spaceport that is incurred during its operational stages.
+    // These values are essential to the UCF Logistics federate.
+    private static final double IDLE_POWER_RATING = 0.090;
+    private static final double PEAK_POWER_RATING = 2.090;
+
     private final SpaceportFederate federate;
     private OperationalState operationalState;
 

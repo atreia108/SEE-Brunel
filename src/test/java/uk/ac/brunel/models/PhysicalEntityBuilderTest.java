@@ -50,7 +50,6 @@ class PhysicalEntityBuilderTest {
             new Lander.Builder()
                     .federate(new LanderFederate(new SEEFederateAmbassador(), config))
                     .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
                     .build();
         });
 
@@ -59,7 +58,6 @@ class PhysicalEntityBuilderTest {
             new Lander.Builder()
                     .name("Brunel_Lander")
                     .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
                     .build();
         });
 
@@ -78,7 +76,6 @@ class PhysicalEntityBuilderTest {
                     .name("Brunel_Lander")
                     .federate(new LanderFederate(new SEEFederateAmbassador(), config))
                     .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
                     .build();
         });
     }
