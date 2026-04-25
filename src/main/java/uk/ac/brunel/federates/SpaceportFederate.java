@@ -87,7 +87,7 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         // Create all the object instances pertinent to your federate and the federation execution at large.
         for (int i = 1; i <= SPACEPORT_COUNT; ++i) {
             SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
-            defaultState.setPosition(SPAWN_POINTS[i]);
+            defaultState.setPosition(SPAWN_POINTS[i - 1]);
             Spaceport s = new Spaceport.Builder()
                     .federate(this)
                     .name(DEFAULT_NAME_SEQUENCE + i)
