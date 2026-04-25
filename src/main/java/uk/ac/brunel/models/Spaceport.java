@@ -1,8 +1,10 @@
 package uk.ac.brunel.models;
 
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.see.skf.annotations.ObjectClass;
 import uk.ac.brunel.exceptions.IncompleteObjectDataException;
 import uk.ac.brunel.federates.SpaceportFederate;
+import uk.ac.brunel.listeners.LandingRequestListener;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 /**
@@ -17,17 +19,31 @@ public class Spaceport extends PhysicalEntity {
     private static final double IDLE_POWER_RATING = 0.090;
     private static final double PEAK_POWER_RATING = 2.090;
 
+    private static final double LUNAR_GRAVITATIONAL_PULL = -1.625;
+
     private final SpaceportFederate federate;
     private OperationalState operationalState;
 
     private Spaceport(Builder builder) {
         this.federate = builder.spFederate;
 
+        initSpaceportMetadata(builder);
+        createListeners();
+    }
+
+    private void initSpaceportMetadata(Builder builder) {
         setName(builder.spName);
+        setStatus("Available");
+        setType("Spaceport");
         setParentReferenceFrame(builder.spParentReferenceFrame);
         setState(builder.spState);
+        setAcceleration(Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL));
 
-        operationalState = OperationalState.IDLE;
+        operationalState = OperationalState.AVAILABLE;
+    }
+
+    private void createListeners() {
+        federate.addInteractionListener(new LandingRequestListener(this));
     }
 
     public synchronized void acceptLander() {
@@ -87,12 +103,18 @@ public class Spaceport extends PhysicalEntity {
     }
 
     private enum OperationalState {
-        IDLE,
+        AVAILABLE,
         AWAITING_ROVER_ALLOCATION,
         AWAITING_ROVER_ARRIVAL,
         PROCESSING_CARGO,
         AWAITING_LANDER_TOUCHDOWN,
         AWAITING_LANDER_DEPARTURE,
         REFUELING
+    }
+
+    private void nextState() {
+        switch (operationalState) {
+
+        }
     }
 }

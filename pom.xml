@@ -12,8 +12,8 @@
     <url>https://www.github.com/atreia108/SEE-Brunel</url>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -50,17 +50,17 @@
         <dependency>
             <groupId>se.pitch</groupId>
             <artifactId>prticore</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.2</version>
         </dependency>
         <dependency>
             <groupId>se.pitch</groupId>
             <artifactId>prti1516-hla4</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.2</version>
         </dependency>
         <dependency>
             <groupId>se.pitch</groupId>
             <artifactId>booster1516</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.see</groupId>

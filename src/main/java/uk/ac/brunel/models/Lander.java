@@ -7,12 +7,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.brunel.exceptions.IncompleteObjectDataException;
 import uk.ac.brunel.federates.LanderFederate;
+import uk.ac.brunel.federates.SpaceportFederate;
 import uk.ac.brunel.interactions.MSGLanderTakeoff;
+import uk.ac.brunel.interactions.MSGLandingRequest;
 import uk.ac.brunel.listeners.DepartureRequestListener;
 import uk.ac.brunel.listeners.SpaceportAssignmentListener;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 
 /**
  * Simulation model of a lunar lander.
@@ -23,7 +28,8 @@ import java.util.Random;
 public class Lander extends DynamicalEntity implements SimEntity {
     private static final Logger logger = LoggerFactory.getLogger(Lander.class);
 
-    private final Random rng;
+    public final Supplier<Vector3D> holdingWaypointGenerator = this::createHoldingWaypoint;
+
     private static final double RNG_MIN_X_BOUND = -550.0;
     private static final double RNG_MAX_X_BOUND = 650.0;
     private static final double RNG_MIN_Y_BOUND = -350.0;
@@ -37,37 +43,50 @@ public class Lander extends DynamicalEntity implements SimEntity {
     private static final double DISTANCE_THRESHOLD = 20.0;
     private static final double LUNAR_GRAVITATIONAL_PULL = -1.625;
 
+    private final Random rng;
+    private final List<Spaceport> spaceports;
     private final LanderFederate federate;
     private final FlightComputer flightComputer;
     private OperationalState operationalState;
 
     public Lander(Builder builder) {
         rng = new Random();
+        spaceports = new ArrayList<>();
+        federate = builder.ldFederate;
+        flightComputer = new FlightComputer();
+
+        initLanderMetadata(builder);
+        createListeners();
+    }
+
+    private void initLanderMetadata(Builder builder) {
         setName(builder.ldName);
+        setStatus("Approaching");
+        setType("Lander");
         setParentReferenceFrame(builder.ldParentReferenceFrame);
         setAcceleration(Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL));
 
-        Vector3D spawnPoint = createSpawnWaypoint();
+        Vector3D spawnPoint = createHoldingWaypoint();
         getState().setPosition(spawnPoint);
-        
-        this.federate = builder.ldFederate;
-        flightComputer = new FlightComputer();
-        operationalState = OperationalState.APPROACHING;
 
+        operationalState = OperationalState.APPROACHING;
+    }
+
+    private void createListeners() {
         federate.addInteractionListener(new SpaceportAssignmentListener(this));
         federate.addInteractionListener(new DepartureRequestListener(this));
     }
 
-    private Vector3D createSpawnWaypoint() {
-        double xPos = rng.nextDouble(RNG_MIN_X_BOUND, RNG_MAX_X_BOUND);
-        double yPos = rng.nextDouble(RNG_MIN_Y_BOUND, RNG_MAX_Y_BOUND);
-        double zPos = rng.nextDouble(RNG_MIN_Z_BOUND, RNG_MAX_Z_BOUND);
+    private Vector3D createHoldingWaypoint() {
+        double x = rng.nextDouble(RNG_MIN_X_BOUND, RNG_MAX_X_BOUND);
+        double y = rng.nextDouble(RNG_MIN_Y_BOUND, RNG_MAX_Y_BOUND);
+        double z = rng.nextDouble(RNG_MIN_Z_BOUND, RNG_MAX_Z_BOUND);
         
-        return Vector3D.of(xPos, yPos, zPos);
+        return Vector3D.of(x, y, z);
     }
 
     private void designateSpaceportWaypoint(Vector3D waypoint) {
-        flightComputer.travel(waypoint);
+        flightComputer.chartRoute(waypoint);
         logger.info("Destination for Lander <{}> has been set to {}", getName(), waypoint);
     }
 
@@ -75,8 +94,9 @@ public class Lander extends DynamicalEntity implements SimEntity {
         if (operationalState == OperationalState.APPROACHING) {
             Object o = federate.queryRemoteObjectInstance(spaceportName);
 
-            if (o instanceof Spaceport) {
-                Spaceport spaceport = (Spaceport) o;
+            if (o instanceof Spaceport spaceport) {
+                nextState();
+
                 Vector3D spaceportPosition = spaceport.getState().getPosition();
                 designateSpaceportWaypoint(spaceportPosition);
             }
@@ -85,11 +105,12 @@ public class Lander extends DynamicalEntity implements SimEntity {
 
     public synchronized void depart(String spaceportName) {
         if (operationalState == OperationalState.SERVICING) {
-            Vector3D departureWaypoint = createSpawnWaypoint();
-            flightComputer.travel(departureWaypoint);
+            Vector3D departureWaypoint = createHoldingWaypoint();
+            flightComputer.chartRoute(departureWaypoint);
 
             try {
-                operationalState = OperationalState.DEPARTING;
+                nextState();
+
                 MSGLanderTakeoff takeoffNotification = new MSGLanderTakeoff(getName(), spaceportName);
                 federate.sendInteraction(takeoffNotification);
             } catch (FederateNotExecutionMember | SaveInProgress | RTIinternalError | InteractionParameterNotDefined |
@@ -102,9 +123,32 @@ public class Lander extends DynamicalEntity implements SimEntity {
     @Override
     public void update() {
         if (operationalState == OperationalState.APPROACHING) {
-            // TODO - Query for spaceports that are "available" and send an interaction to them.
+            if (spaceports.size() < SpaceportFederate.SPACEPORT_COUNT) {
+                queryRemoteSpaceportInstances();
+            }
+
+            for (Spaceport s : spaceports) {
+                if (s.getStatus().equals("Available")) {
+                    try {
+                        MSGLandingRequest landingRequest = new MSGLandingRequest(getName(), s.getName());
+                        federate.sendInteraction(landingRequest);
+                    } catch (FederateNotExecutionMember | SaveInProgress | RTIinternalError | InteractionParameterNotDefined |
+                            InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RestoreInProgress e) {
+                        throw new IllegalStateException("Failed to dispatch landing request to spaceport <" + s.getName() + ">.", e);
+                    }
+                }
+            }
         } else if (operationalState == OperationalState.LANDING || operationalState == OperationalState.DEPARTING) {
-            flightComputer.exec();
+            flightComputer.navigate();
+        }
+    }
+
+    private void queryRemoteSpaceportInstances() {
+        for (int i = 1; i <= SpaceportFederate.SPACEPORT_COUNT; ++i) {
+            Object o = federate.queryRemoteObjectInstance(SpaceportFederate.DEFAULT_NAME_SEQUENCE + i);
+            if (o instanceof Spaceport spaceport) {
+                spaceports.add(spaceport);
+            }
         }
     }
 
@@ -112,7 +156,7 @@ public class Lander extends DynamicalEntity implements SimEntity {
         private Vector3D destination;
         private Vector3D positionDelta;
 
-        public void travel(Vector3D waypoint) {
+        public void chartRoute(Vector3D waypoint) {
             destination = waypoint;
 
             SpaceTimeCoordinateState landerState = getState();
@@ -141,7 +185,7 @@ public class Lander extends DynamicalEntity implements SimEntity {
             return (n1 > n2) ? 1 : -1;
         }
 
-        public void exec() {
+        public void navigate() {
             boolean changed = false;
             Vector3D landerPosition = getState().getPosition();
             // Adjustments to the X-axis component.
@@ -165,10 +209,10 @@ public class Lander extends DynamicalEntity implements SimEntity {
             // The lander will never precisely reach its destination because that would require some serious precision.
             // So, if it fits within a specified threshold distance of the target point, we assume it has reached there.
             if (atDestination()) {
-                operationalState = OperationalState.SERVICING;
-
                 getState().setPosition(destination);
                 getState().setVelocity(Vector3D.of(0, 0, 0));
+                nextState();
+
                 logger.info("Lander <{}> has reached its destination {}.", getName(), getState().getPosition());
                 changed = true;
             }
@@ -208,7 +252,26 @@ public class Lander extends DynamicalEntity implements SimEntity {
     }
 
     private void nextState() {
-        // TODO - Set lander states and also set the corresponding PhysicalEntity state.
+        switch (operationalState) {
+            case LANDING:
+                operationalState = OperationalState.SERVICING;
+                setStatus("Servicing");
+                break;
+            case SERVICING:
+                operationalState = OperationalState.DEPARTING;
+                setStatus("Departing");
+                break;
+            case DEPARTING:
+                operationalState = OperationalState.APPROACHING;
+                setStatus("Approaching");
+                break;
+            default:
+                operationalState = OperationalState.LANDING;
+                setStatus("Landing");
+                break;
+        }
+
+        federate.updateObjectInstance(this);
     }
 
     public static class Builder {

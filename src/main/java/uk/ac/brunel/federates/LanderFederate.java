@@ -43,6 +43,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class LanderFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/lander.conf");
 
+    private static final String DEFAULT_NAME_SEQUENCE = "brunel_lander_";
+
     private final Set<Lander> landers;
 
     public LanderFederate(SEEFederateAmbassador federateAmbassador, FederateConfiguration federateConfiguration) {
@@ -69,11 +71,10 @@ public class LanderFederate extends SEELateJoinerFederate {
     @Override
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
-        String landerNameSequence = "brunel_lander_";
-        for (int i = 1; i < 3; ++i) {
+        for (int i = 1; i <= SpaceportFederate.SPACEPORT_COUNT; ++i) {
             Lander l = new Lander.Builder()
                     .federate(this)
-                    .name(landerNameSequence + i)
+                    .name(DEFAULT_NAME_SEQUENCE + i)
                     .parentReferenceFrame("AitkenBasinLocalFixed")
                     .build();
 

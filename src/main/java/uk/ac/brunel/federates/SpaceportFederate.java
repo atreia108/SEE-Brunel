@@ -24,10 +24,10 @@
 package uk.ac.brunel.federates;
 
 import hla.rti1516_2025.exceptions.*;
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
-import uk.ac.brunel.listeners.LanderListener;
 import uk.ac.brunel.interactions.*;
 import uk.ac.brunel.models.DynamicalEntity;
 import uk.ac.brunel.models.PhysicalEntity;
@@ -43,6 +43,14 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 public class SpaceportFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/spaceport.conf");
+
+    public static final int SPACEPORT_COUNT = 2;
+    public static final String DEFAULT_NAME_SEQUENCE = "brunel_spaceport_";
+
+    private static final Vector3D[] SPAWN_POINTS = new Vector3D[]{
+            Vector3D.of(100.0, 430.0, -5587),
+            Vector3D.of(100.0, 400.0, -5587)
+    };
 
     private final CopyOnWriteArraySet<Spaceport> spaceports;
 
@@ -77,25 +85,19 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     @Override
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
-
-        String spaceportNameSequence = "brunel_spaceport_";
-        for (int i = 1; i < 4; ++i) {
+        for (int i = 1; i <= SPACEPORT_COUNT; ++i) {
+            SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
+            defaultState.setPosition(SPAWN_POINTS[i]);
             Spaceport s = new Spaceport.Builder()
                     .federate(this)
-                    .name(spaceportNameSequence + i)
+                    .name(DEFAULT_NAME_SEQUENCE + i)
                     .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState()) // TODO - Set initial spawn points.
+                    .spaceTimeCoordinateState(defaultState)
                     .build();
 
             registerObjectInstance(s, s.getName());
             spaceports.add(s);
         }
-
-        registerEventListeners();
-    }
-
-    private void registerEventListeners() {
-        addInteractionListener(new LanderListener(spaceports));
     }
 
     @Override
