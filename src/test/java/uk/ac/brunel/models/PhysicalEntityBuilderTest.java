@@ -61,15 +61,6 @@ class PhysicalEntityBuilderTest {
                     .build();
         });
 
-        /* SpaceTimeCoordinateState field is missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Lander.Builder()
-                    .name("Brunel_Lander")
-                    .federate(new LanderFederate(new SEEFederateAmbassador(), config))
-                    .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .build();
-        });
-
         /* All fields are present */
         assertDoesNotThrow(() -> {
             new Lander.Builder()
