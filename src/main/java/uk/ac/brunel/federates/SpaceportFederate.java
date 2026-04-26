@@ -73,6 +73,8 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         publishInteractionClass(MSGLandingPermission.class);
         publishInteractionClass(MSGLogisticsDeliveryRequest.class);
 
+        publishInteractionClass(UCFPowerRequest.class);
+
         subscribeInteractionClass(MSGCargoPickupJobAccepted.class);
         subscribeInteractionClass(MSGCargoPickupJobRejected.class);
         subscribeInteractionClass(MSGCargoTransferReady.class);
@@ -80,6 +82,8 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         subscribeInteractionClass(MSGLanderTakeoff.class);
         subscribeInteractionClass(MSGLanderTouchdown.class);
         subscribeInteractionClass(MSGLogisticsDeliveryResponse.class);
+        subscribeInteractionClass(UCFPowerAllocation.class);
+        subscribeInteractionClass(UCFLoadSheddingEvent.class);
     }
 
     @Override
