@@ -58,19 +58,19 @@ public class DynamicalEntity extends PropertyChangeSubject {
     @Attribute(name = "acceleration", coder = Vector3DCoder.class)
     private Vector3D acceleration;
 
-    @Attribute(name = "rotational_acceleration", coder = Vector3DCoder.class)
+    @Attribute(name = "rotational_acceleration", coder = Vector3DCoder.class, scope = ScopeLevel.NONE)
     private Vector3D rotationalAcceleration;
 
-    @Attribute(name = "center_of_mass", coder = Vector3DCoder.class)
+    @Attribute(name = "center_of_mass", coder = Vector3DCoder.class, scope = ScopeLevel.NONE)
     private Vector3D centerOfMass;
 
-    @Attribute(name = "body_wrt_structural", coder = QuaternionCoder.class)
+    @Attribute(name = "body_wrt_structural", coder = QuaternionCoder.class, scope = ScopeLevel.NONE)
     private Quaternion bodyWrtStructural;
 
-    @Attribute(name = "force", coder = Vector3DCoder.class)
+    @Attribute(name = "force", coder = Vector3DCoder.class, scope = ScopeLevel.NONE)
     private Vector3D force;
 
-    @Attribute(name = "torque", coder = Vector3DCoder.class)
+    @Attribute(name = "torque", coder = Vector3DCoder.class, scope = ScopeLevel.NONE)
     private Vector3D torque;
 
     @Attribute(name = "mass", coder = HLAfloat64LECoder.class, scope = ScopeLevel.NONE)
@@ -79,10 +79,10 @@ public class DynamicalEntity extends PropertyChangeSubject {
     @Attribute(name = "mass_rate", coder = HLAfloat64LECoder.class, scope = ScopeLevel.NONE)
     private double massRate;
 
-    @Attribute(name = "inertia", coder = SimpleMatrixCoder.class)
+    @Attribute(name = "inertia", coder = SimpleMatrixCoder.class, scope = ScopeLevel.NONE)
     private SimpleMatrix inertia;
 
-    @Attribute(name = "inertia_rate", coder = SimpleMatrixCoder.class)
+    @Attribute(name = "inertia_rate", coder = SimpleMatrixCoder.class, scope = ScopeLevel.NONE)
     private SimpleMatrix inertiaRate;
 
     public DynamicalEntity() {

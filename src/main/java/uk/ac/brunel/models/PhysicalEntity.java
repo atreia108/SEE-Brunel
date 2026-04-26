@@ -37,10 +37,10 @@ import org.see.skf.util.encoding.HLAunicodeStringCoder;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class PhysicalEntity extends PropertyChangeSubject {
-    @Attribute(name = "name", coder = HLAunicodeStringCoder.class, scope = ScopeLevel.PUBLISH)
+    @Attribute(name = "name", coder = HLAunicodeStringCoder.class)
     private String name;
 
-    @Attribute(name = "type", coder = HLAunicodeStringCoder.class, scope = ScopeLevel.SUBSCRIBE)
+    @Attribute(name = "type", coder = HLAunicodeStringCoder.class)
     private String type;
 
     @Attribute(name = "status", coder = HLAunicodeStringCoder.class)
@@ -55,13 +55,13 @@ public class PhysicalEntity extends PropertyChangeSubject {
     @Attribute(name = "acceleration", coder = Vector3DCoder.class)
     private Vector3D acceleration;
 
-    @Attribute(name = "rotational_acceleration", coder = Vector3DCoder.class)
+    @Attribute(name = "rotational_acceleration", coder = Vector3DCoder.class, scope = ScopeLevel.NONE)
     private Vector3D rotationalAcceleration;
 
-    @Attribute(name = "center_of_mass", coder = Vector3DCoder.class)
+    @Attribute(name = "center_of_mass", coder = Vector3DCoder.class, scope = ScopeLevel.NONE)
     private Vector3D centerOfMass;
 
-    @Attribute(name = "body_wrt_structural", coder = QuaternionCoder.class)
+    @Attribute(name = "body_wrt_structural", coder = QuaternionCoder.class, scope = ScopeLevel.NONE)
     private Quaternion bodyWrtStructural;
 
     public PhysicalEntity() {

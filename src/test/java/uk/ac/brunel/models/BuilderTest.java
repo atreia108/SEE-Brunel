@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author Hridyanshu Aatreya
  */
-class PhysicalEntityBuilderTest {
+class BuilderTest {
     private static FederateConfiguration config;
 
     @BeforeAll
@@ -28,7 +28,7 @@ class PhysicalEntityBuilderTest {
     }
 
     @Test
-    void createLanderTest() {
+    void landerBuilderTest() {
         /* A lander requires the following fields to be supplied at the time of creation:
          * (1) Name
          * (2) Associated federate
@@ -41,38 +41,32 @@ class PhysicalEntityBuilderTest {
          */
 
         /* All fields missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Lander.Builder().build();
-        });
+        assertThrows(IncompleteObjectDataException.class, () -> new Lander.Builder().build());
 
         /* Name field is missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Lander.Builder()
-                    .federate(new LanderFederate(new SEEFederateAmbassador(), config))
-                    .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .build();
-        });
+        assertThrows(IncompleteObjectDataException.class, () -> new Lander.Builder()
+                .federate(new LanderFederate(new SEEFederateAmbassador(), config))
+                .parentReferenceFrame("AitkenLocalBasinFixed")
+                .build());
 
         /* Federate field is missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Lander.Builder()
-                    .name("Brunel_Lander")
-                    .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .build();
-        });
+        assertThrows(IncompleteObjectDataException.class, () -> new Lander.Builder()
+                .name("Brunel_Lander")
+                .parentReferenceFrame("AitkenLocalBasinFixed")
+                .build());
 
         /* All fields are present */
-        assertDoesNotThrow(() -> {
+        assertDoesNotThrow(() ->
             new Lander.Builder()
                     .name("Brunel_Lander")
                     .federate(new LanderFederate(new SEEFederateAmbassador(), config))
                     .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .build();
-        });
+                    .build()
+        );
     }
 
     @Test
-    void createSpaceportTest() {
+    void spaceportBuilderTest() {
         /* A Spaceport requires the following fields to be supplied at the time of creation:
          * (1) Name
          * (2) Associated federate
@@ -85,45 +79,48 @@ class PhysicalEntityBuilderTest {
          */
 
         /* All fields missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Spaceport.Builder().build();
-        });
+        assertThrows(IncompleteObjectDataException.class, () -> new Spaceport.Builder().build());
 
         /* Name field is missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Spaceport.Builder()
-                    .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
-                    .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
-                    .build();
-        });
+        assertThrows(IncompleteObjectDataException.class, () -> new Spaceport.Builder()
+                .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
+                .parentReferenceFrame("AitkenLocalBasinFixed")
+                .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
+                .build());
 
         /* Federate field is missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Spaceport.Builder()
-                    .name("Brunel_Spaceport")
-                    .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
-                    .build();
-        });
+        assertThrows(IncompleteObjectDataException.class, () -> new Spaceport.Builder()
+                .name("Brunel_Spaceport")
+                .parentReferenceFrame("AitkenLocalBasinFixed")
+                .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
+                .build());
 
         /* SpaceTimeCoordinateState field is missing */
-        assertThrows(IncompleteObjectDataException.class, () -> {
-            new Spaceport.Builder()
-                    .name("Brunel_Spaceport")
-                    .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
-                    .parentReferenceFrame("AitkenLocalBasinFixed")
-                    .build();
-        });
+        assertThrows(IncompleteObjectDataException.class, () -> new Spaceport.Builder()
+                .name("Brunel_Spaceport")
+                .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
+                .parentReferenceFrame("AitkenLocalBasinFixed")
+                .build());
+
+        /* Arm name field is missing */
+        assertThrows(IncompleteObjectDataException.class, () ->
+                new Spaceport.Builder()
+                        .name("Brunel_Spaceport")
+                        .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
+                        .parentReferenceFrame("AitkenBasinLocalFixed")
+                        .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
+                        .build()
+        );
 
         /* All fields are present */
-        assertDoesNotThrow(() -> {
+        assertDoesNotThrow(() ->
             new Spaceport.Builder()
                     .name("Brunel_Spaceport")
                     .federate(new SpaceportFederate(new SEEFederateAmbassador(), config))
                     .parentReferenceFrame("AitkenBasinLocalFixed")
                     .spaceTimeCoordinateState(new SpaceTimeCoordinateState())
-                    .build();
-        });
+                    .arm("Brunel_Spaceport_Arm")
+                    .build()
+        );
     }
 }

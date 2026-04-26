@@ -29,9 +29,7 @@ import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
 import uk.ac.brunel.interactions.*;
-import uk.ac.brunel.models.DynamicalEntity;
-import uk.ac.brunel.models.PhysicalEntity;
-import uk.ac.brunel.models.Spaceport;
+import uk.ac.brunel.models.*;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 import java.io.File;
@@ -45,9 +43,10 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/spaceport.conf");
 
     public static final int SPACEPORT_COUNT = 2;
-    public static final String DEFAULT_NAME_SEQUENCE = "brunel_spaceport_";
+    public static final String SPACEPORT_NAME_SEQUENCE = "brunel_spaceport_";
+    public static final String SPACEPORT_ARM_NAME_SEQUENCE = "brunel_spaceport_arm_";
 
-    private static final Vector3D[] SPAWN_POINTS = new Vector3D[]{
+    private static final Vector3D[] SPAWN_POINTS = new Vector3D[] {
             Vector3D.of(100.0, 430.0, -5587),
             Vector3D.of(100.0, 400.0, -5587)
     };
@@ -65,6 +64,7 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         // Register the appropriate event listeners just before or at this stage to be notified when a remote object
         // instance is created or a certain interaction is received.
         publishObjectClass(PhysicalEntity.class);
+        publishObjectClass(PhysicalInterface.class);
         subscribeObjectClass(DynamicalEntity.class);
 
         publishInteractionClass(MSGCargoPickupJob.class);
@@ -92,14 +92,20 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         for (int i = 1; i <= SPACEPORT_COUNT; ++i) {
             SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
             defaultState.setPosition(SPAWN_POINTS[i - 1]);
+
+            String spaceportName = SPACEPORT_NAME_SEQUENCE + i;
+            String spaceportArmName = SPACEPORT_ARM_NAME_SEQUENCE + i;
             Spaceport s = new Spaceport.Builder()
                     .federate(this)
-                    .name(DEFAULT_NAME_SEQUENCE + i)
+                    .name(spaceportName)
                     .parentReferenceFrame("AitkenBasinLocalFixed")
                     .spaceTimeCoordinateState(defaultState)
+                    .arm(spaceportArmName)
                     .build();
-
             registerObjectInstance(s, s.getName());
+
+            Object spArm = s.getArmObject();
+            registerObjectInstance(spArm, spaceportArmName);
             spaceports.add(s);
         }
     }

@@ -145,7 +145,7 @@ public class Lander extends DynamicalEntity implements SimEntity {
 
     private void queryRemoteSpaceportInstances() {
         for (int i = 1; i <= SpaceportFederate.SPACEPORT_COUNT; ++i) {
-            Object o = federate.queryRemoteObjectInstance(SpaceportFederate.DEFAULT_NAME_SEQUENCE + i);
+            Object o = federate.queryRemoteObjectInstance(SpaceportFederate.SPACEPORT_NAME_SEQUENCE + i);
             if (o instanceof Spaceport spaceport) {
                 spaceports.add(spaceport);
             }

@@ -25,6 +25,7 @@ package uk.ac.brunel.models;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
+import org.see.skf.runtime.ScopeLevel;
 import uk.ac.brunel.encoding.QuaternionCoder;
 import uk.ac.brunel.encoding.Vector3DCoder;
 import org.see.skf.annotations.Attribute;
@@ -34,16 +35,16 @@ import org.see.skf.util.encoding.HLAunicodeStringCoder;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalInterface")
 public class PhysicalInterface extends PropertyChangeSubject {
-    @Attribute(name = "name", coder = HLAunicodeStringCoder.class)
+    @Attribute(name = "name", coder = HLAunicodeStringCoder.class, scope = ScopeLevel.PUBLISH)
     private String name;
 
-    @Attribute(name = "parent_name", coder = HLAunicodeStringCoder.class)
+    @Attribute(name = "parent_name", coder = HLAunicodeStringCoder.class, scope = ScopeLevel.PUBLISH)
     private String parentName;
 
-    @Attribute(name = "position", coder = Vector3DCoder.class)
+    @Attribute(name = "position", coder = Vector3DCoder.class, scope = ScopeLevel.NONE)
     private Vector3D position;
 
-    @Attribute(name = "attitude", coder = QuaternionCoder.class)
+    @Attribute(name = "attitude", coder = QuaternionCoder.class, scope = ScopeLevel.NONE)
     private Quaternion attitude;
 
     public PhysicalInterface() {
