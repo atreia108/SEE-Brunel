@@ -182,6 +182,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         operationalState = nextState;
     }
 
+    @ObjectClass(name = "HLAobjectRoot.PhysicalInterface")
     public static class SpaceportArm extends PhysicalInterface {
         // Power load of the arm that is incurred during its operational stages in kilowatts (kW).
         private static final double IDLE_POWER_RATING = 0.435;
