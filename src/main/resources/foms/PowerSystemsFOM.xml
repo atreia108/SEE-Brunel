@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<objectModel xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010 http://standards.ieee.org/downloads/1516/1516.2-2010/IEEE1516-DIF-2010.xsd" xmlns="http://standards.ieee.org/IEEE1516-2010" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelIdentification>
+        <name>PowerSystemsFOM</name>
+        <type>FOM</type>
+        <version>1.0</version>
+        <securityClassification>Unclassified</securityClassification>
+        <purpose>FOM for the Power Systems Federate (Reactor, Solar, Battery, Bus)</purpose>
+        <applicationDomain/>
+        <description>Defines all interaction classes published from and subscribed to by the Power Systems Federate.</description>
+        <useLimitation/>
+        <other/>
+    </modelIdentification>
+    <objects>
+        <objectClass>
+            <name>HLAobjectRoot</name>
+            <objectClass>
+                <name>PhysicalEntity</name>
+                <objectClass>
+                    <name>PowerSystemsEntity</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Fixed lunar base power systems installation.</semantics>
+                </objectClass>
+                <objectClass>
+                    <name>RoverChargingPad</name>
+                    <sharing>PublishSubscribe</sharing>
+                    <semantics>Fixed rover charging pad. Published by the Power Systems Federate with a static position that rover federates can use to determine proximity.</semantics>
+                </objectClass>
+                <objectClass>
+                    <name>DynamicalEntity</name>
+                    <objectClass>
+                        <name>TestRoverEntity</name>
+                        <sharing>PublishSubscribe</sharing>
+                        <semantics>Test rover for validating power systems federate charging behavior.</semantics>
+                    </objectClass>
+                </objectClass>
+            </objectClass>
+        </objectClass>
+    </objects>
+    <interactions>
+        <interactionClass>
+            <name>HLAinteractionRoot</name>
+            <interactionClass>
+                <name>FuelAvailable</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Updated fuel mass delivered to the reactor from the storage federate.</semantics>
+                <parameter>
+                    <name>kg</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Total fuel mass available in kilograms.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>MaintenanceCommand</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Commands the reactor to go offline for maintenance.</semantics>
+                <parameter>
+                    <name>goOffline</name>
+                    <dataType>HLAboolean</dataType>
+                    <semantics>True to take the reactor offline.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>DustCleaningCommand</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Initiates a dust-cleaning cycle on the solar panel array.</semantics>
+            </interactionClass>
+            <interactionClass>
+                <name>PanelOrientationCommand</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Sets the solar panel tilt angle relative to solar incidence.</semantics>
+                <parameter>
+                    <name>angleDeg</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Panel orientation in degrees.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>StatusQuery</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Requests a status report from the power systems federate.</semantics>
+            </interactionClass>
+            <interactionClass>
+                <name>CurtailCommand</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Commands the battery to go offline (curtailment).</semantics>
+            </interactionClass>
+            <interactionClass>
+                <name>BatteryResumeCommand</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Resumes battery operation after a curtailment command.</semantics>
+            </interactionClass>
+            <interactionClass>
+                <name>PowerRequest</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>A load federate requests a specific power allocation from the bus.</semantics>
+                <parameter>
+                    <name>federateID</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Unique identifier of the requesting federate.</semantics>
+                </parameter>
+                <parameter>
+                    <name>requestedKw</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Power requested in kilowatts.</semantics>
+                </parameter>
+                <parameter>
+                    <name>priority</name>
+                    <dataType>HLAinteger32BE</dataType>
+                    <semantics>Load priority (higher = more critical; threshold for emergency mode is 8).</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>ReactorPowerAvailable</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Reactor electrical output available on the grid bus in kW.</semantics>
+                <parameter>
+                    <name>kw</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Power in kilowatts.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>SolarPowerAvailable</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Solar panel AC output available on the grid bus in kW.</semantics>
+                <parameter>
+                    <name>kw</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Power in kilowatts.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>ReactorStatus</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Reactor online/offline status published each timestep.</semantics>
+                <parameter>
+                    <name>online</name>
+                    <dataType>HLAboolean</dataType>
+                    <semantics>True if the reactor is operational.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>WasteHeat</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Reactor waste heat output to the logistics federate.</semantics>
+                <parameter>
+                    <name>kw</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Waste heat in kilowatts.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>ReactorAlarm</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Edge-triggered alarm from the reactor subsystem. Values: FUEL_LOW, FUEL_DEPLETED, OVERHEATING.</semantics>
+                <parameter>
+                    <name>message</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Alarm code string.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>FuelRemaining</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Current reactor fuel mass remaining, published each timestep.</semantics>
+                <parameter>
+                    <name>kg</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Fuel mass in kilograms.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>SolarStatusUpdate</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Solar panel array operational status. Values: ONLINE, OFFLINE, DUSTY, CURTAILED.</semantics>
+                <parameter>
+                    <name>status</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Status enum name.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>SoilingFactorUpdate</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Solar panel soiling factor (0.0 = fully soiled, 1.0 = clean).</semantics>
+                <parameter>
+                    <name>factor</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Soiling factor dimensionless ratio.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>BatterySoC</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Battery state of charge as a fraction (0.0-1.0).</semantics>
+                <parameter>
+                    <name>fraction</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>SoC fraction.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>BatteryPowerAvailable</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Maximum power the battery can currently supply to the bus in kW.</semantics>
+                <parameter>
+                    <name>kw</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Power in kilowatts.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>BatteryStoredEnergy</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Total energy currently stored in the battery bank.</semantics>
+                <parameter>
+                    <name>kwh</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Stored energy in kilowatt-hours.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>BatteryStatusUpdate</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Battery operational status. Values: ONLINE, CHARGING, DISCHARGING, OFFLINE.</semantics>
+                <parameter>
+                    <name>status</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Status enum name.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>PowerAllocation</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Power allocated to a specific load federate by the bus this timestep.</semantics>
+                <parameter>
+                    <name>federateID</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Identifier of the federate receiving this allocation.</semantics>
+                </parameter>
+                <parameter>
+                    <name>kw</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Power allocated in kilowatts.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>PowerEventMessage</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Edge-triggered bus power event. Values: BUS_UNDERPOWER, BUS_RECOVERED, EMERGENCY_MODE.</semantics>
+                <parameter>
+                    <name>event</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Event enum name.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>BusState</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Snapshot of bus supply, demand, and unmet load published each timestep.</semantics>
+                <parameter>
+                    <name>supply</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Total bus supply after transmission losses in kW.</semantics>
+                </parameter>
+                <parameter>
+                    <name>demand</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Aggregate load demand in kW.</semantics>
+                </parameter>
+                <parameter>
+                    <name>unmet</name>
+                    <dataType>HLAfloat64BE</dataType>
+                    <semantics>Unmet load in kW (max(0, demand - supply)).</semantics>
+                </parameter>
+                <parameter>
+                    <name>federateID</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Publishing federate name.</semantics>
+                </parameter>
+            </interactionClass>
+            <interactionClass>
+                <name>LoadSheddingEvent</name>
+                <sharing>PublishSubscribe</sharing>
+                <transportation>HLAreliable</transportation>
+                <order>TimeStamp</order>
+                <semantics>Notifies a load federate that it must reduce or suspend power consumption.</semantics>
+                <parameter>
+                    <name>targetID</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Federate ID of the load being shed.</semantics>
+                </parameter>
+                <parameter>
+                    <name>action</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Shedding action: REDUCE or SUSPEND.</semantics>
+                </parameter>
+                <parameter>
+                    <name>reason</name>
+                    <dataType>HLAunicodeString</dataType>
+                    <semantics>Human-readable reason for the shedding event.</semantics>
+                </parameter>
+            </interactionClass>
+        </interactionClass>
+    </interactions>
+    <dataTypes>
+        <simpleDataTypes/>
+        <enumeratedDataTypes/>
+        <arrayDataTypes/>
+        <fixedRecordDataTypes/>
+        <variantRecordDataTypes/>
+    </dataTypes>
+    <notes/>
+</objectModel>

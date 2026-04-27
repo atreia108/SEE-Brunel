@@ -5,7 +5,8 @@ import uk.ac.brunel.interactions.MSGLanderDepartureRequest;
 import uk.ac.brunel.models.Lander;
 
 /**
- * Notifies a lander that it has been instructed to depart from a spaceport.
+ * Notifies a lander that it has been instructed to depart from a spaceport. Fired when a MSGLanderDepartureRequest
+ * interaction is received.
  *
  * @author Hridyanshu Aatreya
  */
