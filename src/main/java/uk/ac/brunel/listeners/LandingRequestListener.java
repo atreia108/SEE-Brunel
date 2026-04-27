@@ -19,12 +19,10 @@ public class LandingRequestListener implements InteractionListener {
 
     @Override
     public void received(Object interaction) {
-        if (interaction instanceof MSGLandingRequest landingRequest) {
-            String targetSpaceport = landingRequest.getSpaceport();
+        if (interaction instanceof MSGLandingRequest landingRequest
+                && landingRequest.getSpaceport().equals(spaceport.getName())) {
             String landerName = landingRequest.getLander();
-            if (targetSpaceport.equals(spaceport.getName())) {
-                spaceport.processLandingRequest(landerName);
-            }
+            spaceport.processLandingRequest(landerName);
         }
     }
 }

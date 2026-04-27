@@ -19,7 +19,8 @@ public class DepartureRequestListener implements InteractionListener {
 
     @Override
     public void received(Object interaction) {
-        if (interaction instanceof MSGLanderDepartureRequest departureRequest && departureRequest.getLander().equals(lander.getName())) {
+        if (interaction instanceof MSGLanderDepartureRequest departureRequest
+                && departureRequest.getLander().equals(lander.getName())) {
             lander.depart(departureRequest.getSpaceport());
         }
     }

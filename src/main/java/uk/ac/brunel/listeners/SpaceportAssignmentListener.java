@@ -20,7 +20,9 @@ public class SpaceportAssignmentListener implements InteractionListener {
 
     @Override
     public void received(Object interaction) {
-        if (interaction instanceof MSGLandingPermission permission && permission.getLander().equals(lander.getName()) && permission.getVerdict() == OperationalVerdict.ACCEPTED) {
+        if (interaction instanceof MSGLandingPermission permission
+                && permission.getLander().equals(lander.getName())
+                && permission.getVerdict() == OperationalVerdict.ACCEPTED) {
             String spaceportName = permission.getSpaceport();
             lander.acceptedBy(spaceportName);
         }

@@ -30,6 +30,8 @@ public class Lander extends DynamicalEntity implements SimEntity {
 
     public final Supplier<Vector3D> holdingWaypointGenerator = this::createHoldingWaypoint;
 
+    private static final int COOLDOWN_TIME = 10;
+
     private static final double RNG_MIN_X_BOUND = -550.0;
     private static final double RNG_MAX_X_BOUND = 650.0;
     private static final double RNG_MIN_Y_BOUND = -350.0;
@@ -49,11 +51,14 @@ public class Lander extends DynamicalEntity implements SimEntity {
     private final FlightComputer flightComputer;
     private OperationalState operationalState;
 
+    private int cooldownTime;
+
     public Lander(Builder builder) {
         rng = new Random();
         spaceports = new ArrayList<>();
         federate = builder.ldFederate;
         flightComputer = new FlightComputer();
+        cooldownTime = 0;
 
         initLanderMetadata(builder);
         createListeners();
@@ -81,7 +86,7 @@ public class Lander extends DynamicalEntity implements SimEntity {
         double x = rng.nextDouble(RNG_MIN_X_BOUND, RNG_MAX_X_BOUND);
         double y = rng.nextDouble(RNG_MIN_Y_BOUND, RNG_MAX_Y_BOUND);
         double z = rng.nextDouble(RNG_MIN_Z_BOUND, RNG_MAX_Z_BOUND);
-        
+
         return Vector3D.of(x, y, z);
     }
 
@@ -95,10 +100,10 @@ public class Lander extends DynamicalEntity implements SimEntity {
             Object o = federate.queryRemoteObjectInstance(spaceportName);
 
             if (o instanceof Spaceport spaceport) {
-                nextState();
-
                 Vector3D spaceportPosition = spaceport.getState().getPosition();
                 designateSpaceportWaypoint(spaceportPosition);
+
+                nextState();
             }
         }
     }
@@ -109,10 +114,10 @@ public class Lander extends DynamicalEntity implements SimEntity {
             flightComputer.chartRoute(departureWaypoint);
 
             try {
-                nextState();
-
                 MSGLanderTakeoff takeoffNotification = new MSGLanderTakeoff(getName(), spaceportName);
                 federate.sendInteraction(takeoffNotification);
+
+                nextState();
             } catch (FederateNotExecutionMember | SaveInProgress | RTIinternalError | InteractionParameterNotDefined |
                      InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RestoreInProgress e) {
                 throw new IllegalStateException("Failed to dispatch departure notification", e);
@@ -122,21 +127,17 @@ public class Lander extends DynamicalEntity implements SimEntity {
 
     @Override
     public void update() {
-        if (operationalState == OperationalState.APPROACHING) {
-            if (spaceports.size() < SpaceportFederate.SPACEPORT_COUNT) {
-                queryRemoteSpaceportInstances();
-            }
+        // WARNING: The spaceport federate must be running FIRST with the spaceport object(s) created. Otherwise, lander
+        // creation will result in a nasty NullPointerException.
+        if (spaceports.isEmpty()) {
+            queryRemoteSpaceportInstances();
+        }
 
-            for (Spaceport s : spaceports) {
-                if (s.getStatus().equals("Available")) {
-                    try {
-                        MSGLandingRequest landingRequest = new MSGLandingRequest(getName(), s.getName());
-                        federate.sendInteraction(landingRequest);
-                    } catch (FederateNotExecutionMember | SaveInProgress | RTIinternalError | InteractionParameterNotDefined |
-                            InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RestoreInProgress e) {
-                        throw new IllegalStateException("Failed to dispatch landing request to spaceport <" + s.getName() + ">.", e);
-                    }
-                }
+        if (operationalState == OperationalState.APPROACHING) {
+            if (cooldownTime < 1) {
+                obtainLandingClearance();
+            } else {
+                --cooldownTime;
             }
         } else if (operationalState == OperationalState.LANDING || operationalState == OperationalState.DEPARTING) {
             flightComputer.navigate();
@@ -144,10 +145,29 @@ public class Lander extends DynamicalEntity implements SimEntity {
     }
 
     private void queryRemoteSpaceportInstances() {
-        for (int i = 1; i <= SpaceportFederate.SPACEPORT_COUNT; ++i) {
+        for (int i = 1; i == SpaceportFederate.SPACEPORT_COUNT; ++i) {
             Object o = federate.queryRemoteObjectInstance(SpaceportFederate.SPACEPORT_NAME_SEQUENCE + i);
             if (o instanceof Spaceport spaceport) {
                 spaceports.add(spaceport);
+            }
+        }
+    }
+
+    private void obtainLandingClearance() {
+        for (Spaceport s : spaceports) {
+            if (s.getStatus().equals("Available")) {
+                try {
+                    MSGLandingRequest landingRequest = new MSGLandingRequest(getName(), s.getName());
+                    federate.sendInteraction(landingRequest);
+                    cooldownTime = COOLDOWN_TIME;
+
+                    return;
+                } catch (FederateNotExecutionMember | SaveInProgress | RTIinternalError |
+                         InteractionParameterNotDefined |
+                         InteractionClassNotDefined | InteractionClassNotPublished | NotConnected |
+                         RestoreInProgress e) {
+                    throw new IllegalStateException("Failed to dispatch landing request to spaceport <" + s.getName() + ">.", e);
+                }
             }
         }
     }

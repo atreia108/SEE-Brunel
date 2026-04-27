@@ -29,6 +29,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
     // Power load of the spaceport that is incurred during its operational stages in kilowatts (kW).
     private static final double POWER_RATING = 0.092;
     private static final double LUNAR_GRAVITATIONAL_PULL = -1.625;
+    private static final int MAX_COOLDOWN_TIME = 8;
 
     private final SpaceportFederate federate;
 
@@ -36,6 +37,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
     private SpaceportArm arm;
     private String occupyingLander;
 
+    private int departureCooldownTimer;
     private OperationalState preSuspendedOperationalState;
     private OperationalState currentOperationalState;
 
@@ -56,6 +58,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         occupyingLander = "";
         allocatedPower = 0;
         currentOperationalState = preSuspendedOperationalState = OperationalState.AVAILABLE;
+        departureCooldownTimer = 0;
 
         arm = new SpaceportArm(builder.spArmName, getName());
     }
@@ -97,20 +100,34 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         arm.start();
     }
 
+    // TODO
+    public synchronized void landerTakeoff() {
+
+    }
+
     @Override
     public void update() {
         requestPower();
 
-        if (isServicePowerRequirementSatisfied()) {
-            if (currentOperationalState == OperationalState.SUSPENDED) {
-                resumeOperations();
+        if (currentOperationalState == OperationalState.AWAITING_PICKUP_ROVER_DEPARTURE
+                || currentOperationalState == OperationalState.AWAITING_DELIVERY_ROVER_DEPARTURE) {
+            if (departureCooldownTimer < 1) {
+                nextState();
+            } else {
+                departureCooldownTimer--;
             }
+        }
 
-            operateArm();
-        } else {
-            if (currentOperationalState == OperationalState.LOADING_CARGO || currentOperationalState == OperationalState.UNLOADING_CARGO) {
+        if (currentOperationalState == OperationalState.LOADING_CARGO || currentOperationalState == OperationalState.UNLOADING_CARGO) {
+            if (!isServicePowerRequirementSatisfied()) {
                 suspendOperations();
+            } else {
+                operateArm();
             }
+        }
+
+        if (currentOperationalState == OperationalState.SUSPENDED && isServicePowerRequirementSatisfied()) {
+            resumeOperations();
         }
     }
 
@@ -190,6 +207,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
             case UNLOADING_CARGO:
                 newStatus = "Awaiting Rover Departure";
                 currentOperationalState = OperationalState.AWAITING_PICKUP_ROVER_DEPARTURE;
+                departureCooldownTimer = MAX_COOLDOWN_TIME;
                 break;
             case AWAITING_PICKUP_ROVER_DEPARTURE:
                 newStatus = "Awaiting Delivery Rover Allocation";
@@ -206,6 +224,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
             case LOADING_CARGO:
                 newStatus = "Awaiting Delivery Rover Departure";
                 currentOperationalState = OperationalState.AWAITING_DELIVERY_ROVER_DEPARTURE;
+                departureCooldownTimer = MAX_COOLDOWN_TIME;
                 break;
             case AWAITING_DELIVERY_ROVER_DEPARTURE:
                 newStatus = "Hosting Lander Takeoff";
@@ -218,6 +237,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         }
 
         setStatus(newStatus);
+        logger.debug("Spaceport <{}> status: \"{}\"", getName(), newStatus);
         federate.updateObjectInstance(this);
     }
 
@@ -261,6 +281,8 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
                 MSGCargoTransferComplete transferComplete = new MSGCargoTransferComplete();
                 federate.sendInteraction(transferComplete);
                 logger.debug("Spaceport arm <{}> has completed transferring cargo.", getName());
+
+                nextState();
             } catch (FederateNotExecutionMember | InteractionParameterNotDefined | RestoreInProgress |
                      InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RTIinternalError |
                      SaveInProgress e) {
@@ -342,5 +364,9 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
 
     public Object getArmObject() {
         return arm;
+    }
+
+    public String getOccupyingLander() {
+        return occupyingLander;
     }
 }

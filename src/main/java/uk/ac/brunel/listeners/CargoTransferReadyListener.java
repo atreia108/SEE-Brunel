@@ -13,7 +13,8 @@ public class CargoTransferReadyListener implements InteractionListener {
 
     @Override
     public void received(Object interaction) {
-        if (interaction instanceof MSGCargoTransferReady) {
+        if (interaction instanceof MSGCargoTransferReady transferReady
+                && transferReady.getRequestingObject().equals(spaceport.getName())) {
             spaceport.initiateCargoTransfer();
         }
     }

@@ -42,7 +42,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class SpaceportFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/spaceport.conf");
 
-    public static final int SPACEPORT_COUNT = 3;
+    public static final int SPACEPORT_COUNT = 1;
     public static final String SPACEPORT_NAME_SEQUENCE = "brunel_spaceport_";
     public static final String SPACEPORT_ARM_NAME_SEQUENCE = "brunel_spaceport_arm_";
 
