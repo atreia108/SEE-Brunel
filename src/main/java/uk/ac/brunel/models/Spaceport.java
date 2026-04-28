@@ -11,13 +11,12 @@ import org.slf4j.LoggerFactory;
 import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
 import uk.ac.brunel.encoding.Vector3DCoder;
 import uk.ac.brunel.federates.SpaceportFederate;
+import uk.ac.brunel.interactions.MSGCargoPickupJob;
 import uk.ac.brunel.interactions.MSGCargoTransferComplete;
 import uk.ac.brunel.interactions.MSGLandingPermission;
 import uk.ac.brunel.interactions.UCFPowerRequest;
-import uk.ac.brunel.listeners.CargoTransferReadyListener;
-import uk.ac.brunel.listeners.LandingRequestListener;
-import uk.ac.brunel.listeners.PowerAllocationListener;
-import uk.ac.brunel.listeners.TouchdownListener;
+import uk.ac.brunel.listeners.*;
+import uk.ac.brunel.types.CargoType;
 import uk.ac.brunel.types.OperationalVerdict;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
@@ -36,7 +35,8 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
     private static final short PEAK_LEVEL_PRIORITY = 0;
     private static final double LUNAR_GRAVITATIONAL_PULL = -1.625;
 
-    private static final short COOLDOWN_TIME_LIMIT = 8;
+    private static final short COOLDOWN_TIME_LIMIT = 10;
+    private static final Vector3D WAREHOUSE_COORDINATES = Vector3D.of(801, 3053, -5532);
 
     private SpaceportFederate federate;
     private SpaceportArm arm;
@@ -44,6 +44,9 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
     private double allocatedPower;
     private String occupyingLander;
 
+    private String assignedRover;
+
+    private short cargoRequestCooldownTimer;
     private short powerRequestCooldownTimer;
     private short departureCooldownTimer;
     private OperationalState preSuspendedOperationalState;
@@ -95,10 +98,11 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
         state = spState;
         acceleration = Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL);
 
+        assignedRover = "";
         occupyingLander = "";
         allocatedPower = 10.0;
         powerRequestCooldownTimer = 0;
-        currentOperationalState = preSuspendedOperationalState = OperationalState.AVAILABLE;
+        currentOperationalState = preSuspendedOperationalState = OperationalState.AWAITING_PICKUP_ROVER_ALLOCATION;
         departureCooldownTimer = 0;
     }
 
@@ -107,6 +111,7 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
         federate.addInteractionListener(new PowerAllocationListener(this));
         federate.addInteractionListener(new TouchdownListener(this));
         federate.addInteractionListener(new CargoTransferReadyListener(this));
+        federate.addInteractionListener(new RoverAllocationListener(this));
     }
 
     public synchronized void processLandingRequest(String landerName) {
@@ -145,8 +150,14 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
         }
     }
 
+    public synchronized void onCargoPickupJobAccepted(String roverName) {
+        assignedRover = roverName;
+        nextState();
+    }
+
     public synchronized void initiateCargoTransfer() {
         arm.start();
+        nextState();
     }
 
     public synchronized void landerTakeoff() {
@@ -155,7 +166,9 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
 
     @Override
     public void update() {
-        if (!powerEmbargoInEffect()) {
+        if (currentOperationalState == OperationalState.SUSPENDED && isServicePowerRequirementSatisfied()) {
+            resumeOperations();
+        } else if (!powerEmbargoInEffect()) {
             requestPower();
         }
 
@@ -166,6 +179,8 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
             } else {
                 departureCooldownTimer--;
             }
+
+            return;
         }
 
         if (currentOperationalState == OperationalState.LOADING_CARGO || currentOperationalState == OperationalState.UNLOADING_CARGO) {
@@ -174,10 +189,12 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
             } else {
                 operateArm();
             }
-        }
 
-        if (currentOperationalState == OperationalState.SUSPENDED && isServicePowerRequirementSatisfied()) {
-            resumeOperations();
+            return;
+        } else if (currentOperationalState == OperationalState.AWAITING_PICKUP_ROVER_ALLOCATION && cargoRequestLimiterInEffect()) {
+            requestCargoPickup(0);
+        } else if (currentOperationalState == OperationalState.AWAITING_DELIVERY_ROVER_ALLOCATION && cargoRequestLimiterInEffect()) {
+            requestCargoPickup(1);
         }
 
         allocatedPower = 10.0;
@@ -198,8 +215,49 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
         }
     }
 
+    private boolean cargoRequestLimiterInEffect() {
+        if (cargoRequestCooldownTimer > 0) {
+            cargoRequestCooldownTimer--;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void requestCargoPickup(int type) {
+        String resourceName = CargoType.randomType().name();
+
+        try {
+
+            MSGCargoPickupJob pickupJob = createCargoPickupJob(type, resourceName);
+            cargoRequestCooldownTimer = COOLDOWN_TIME_LIMIT;
+
+            federate.sendInteraction(pickupJob);
+        } catch (FederateNotExecutionMember | InteractionParameterNotDefined | RestoreInProgress |
+                 InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RTIinternalError |
+                 SaveInProgress e) {
+            throw new IllegalStateException("Failed to dispatch cargo pickup request.", e);
+        }
+    }
+
+    private MSGCargoPickupJob createCargoPickupJob(int type, String resourceName) {
+        MSGCargoPickupJob pickupJob = new MSGCargoPickupJob();
+        pickupJob.setRequestingObject(name);
+        pickupJob.setCargoType(resourceName);
+
+        if (type == 0) {
+            pickupJob.setPickupLocation(state.getPosition());
+            pickupJob.setDeliveryLocation(WAREHOUSE_COORDINATES);
+        } else {
+            pickupJob.setPickupLocation(WAREHOUSE_COORDINATES);
+            pickupJob.setDeliveryLocation(state.getPosition());
+        }
+        return pickupJob;
+    }
+
     private void requestPower() {
         double powerRequirement = powerConsumption();
+
         try {
             int priority;
 
@@ -211,6 +269,8 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
 
             UCFPowerRequest powerRequest = new UCFPowerRequest(getName(), powerRequirement, priority);
             federate.sendInteraction(powerRequest);
+
+            powerRequestCooldownTimer = COOLDOWN_TIME_LIMIT;
         } catch (FederateNotExecutionMember | InteractionParameterNotDefined | RestoreInProgress |
                  InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RTIinternalError |
                  SaveInProgress e) {
@@ -280,6 +340,7 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
                 break;
             case AWAITING_PICKUP_ROVER_DEPARTURE:
                 newStatus = "Awaiting Delivery Rover Allocation";
+                assignedRover = "";
                 currentOperationalState = OperationalState.AWAITING_DELIVERY_ROVER_ALLOCATION;
                 break;
             case AWAITING_DELIVERY_ROVER_ALLOCATION:
@@ -346,6 +407,7 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
 
         private void stop() {
             transferInProgress = false;
+
             try {
                 MSGCargoTransferComplete transferComplete = new MSGCargoTransferComplete();
                 federate.sendInteraction(transferComplete);
@@ -425,5 +487,9 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
 
     public String getOccupyingLander() {
         return occupyingLander;
+    }
+
+    public String getAssignedRover() {
+        return assignedRover;
     }
 }

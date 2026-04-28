@@ -205,7 +205,7 @@ public class Lander extends PropertyChangeSubject implements SimEntity {
     }
 
     private void queryRemoteSpaceportInstances() {
-        for (int i = 1; i == SpaceportFederate.SPACEPORT_COUNT; ++i) {
+        for (int i = 1; i < SpaceportFederate.SPACEPORT_COUNT + 1; ++i) {
             Object o = federate.queryRemoteObjectInstance(SpaceportFederate.SPACEPORT_NAME_SEQUENCE + i);
             if (o instanceof Spaceport spaceport) {
                 spaceports.add(spaceport);
@@ -260,10 +260,10 @@ public class Lander extends PropertyChangeSubject implements SimEntity {
             double deltaVZAxis = zPolarity * VELOCITY;
             landerState.setVelocity(Vector3D.of(deltaVXAxis, deltaVYAxis, deltaVZAxis));
 
-            Vector3D acceleration = getAcceleration();
+            Vector3D accel = getAcceleration();
             double deltaSXAxis = deltaVXAxis * Math.abs(Math.cos(theta));
             double deltaSYAxis = deltaVYAxis * Math.abs(Math.sin(theta));
-            double deltaSZAxis = deltaVZAxis + (0.5 * acceleration.getZ());
+            double deltaSZAxis = deltaVZAxis + (0.5 * accel.getZ());
             positionDelta = Vector3D.of(deltaSXAxis, deltaSYAxis, deltaSZAxis);
         }
 
