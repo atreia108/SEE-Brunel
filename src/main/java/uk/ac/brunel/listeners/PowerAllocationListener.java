@@ -22,7 +22,7 @@ public class PowerAllocationListener implements InteractionListener {
         if (interaction instanceof UCFPowerAllocation allocation
                 && allocation.getFederateID().equals(spaceport.getName())) {
             double amountAllocated = allocation.getKw();
-            spaceport.setAllocatedPower(amountAllocated);
+            spaceport.onPowerAllocation(amountAllocated);
         }
     }
 }

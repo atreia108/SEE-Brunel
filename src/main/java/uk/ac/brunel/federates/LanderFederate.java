@@ -28,9 +28,8 @@ import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
 import uk.ac.brunel.interactions.*;
-import uk.ac.brunel.models.DynamicalEntity;
 import uk.ac.brunel.models.Lander;
-import uk.ac.brunel.models.PhysicalEntity;
+import uk.ac.brunel.models.Spaceport;
 
 import java.io.File;
 import java.util.Set;
@@ -57,8 +56,8 @@ public class LanderFederate extends SEELateJoinerFederate {
         // Publish/Subscribe object and interaction classes here using methods inherited from the late joiner class.
         // Register the appropriate event listeners just before or at this stage to be notified when a remote object
         // instance is created or a certain interaction is received.
-        publishObjectClass(DynamicalEntity.class);
-        subscribeObjectClass(PhysicalEntity.class);
+        publishObjectClass(Lander.class);
+        subscribeObjectClass(Spaceport.class);
 
         publishInteractionClass(MSGLandingRequest.class);
         publishInteractionClass(MSGLanderTouchdown.class);
@@ -71,12 +70,9 @@ public class LanderFederate extends SEELateJoinerFederate {
     @Override
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
-        for (int i = 1; i <= SpaceportFederate.SPACEPORT_COUNT; ++i) {
-            Lander l = new Lander.Builder()
-                    .federate(this)
-                    .name(DEFAULT_NAME_SEQUENCE + i)
-                    .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .build();
+        for (int i = 1; i < SpaceportFederate.SPACEPORT_COUNT + 1; ++i) {
+            String landerName = DEFAULT_NAME_SEQUENCE + i;
+            Lander l = new Lander(landerName, this);
 
             registerObjectInstance(l, l.getName());
             landers.add(l);

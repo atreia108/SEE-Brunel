@@ -2,10 +2,14 @@ package uk.ac.brunel.models;
 
 import hla.rti1516_2025.exceptions.*;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
+import org.see.skf.annotations.Attribute;
 import org.see.skf.annotations.ObjectClass;
+import org.see.skf.core.PropertyChangeSubject;
+import org.see.skf.util.encoding.HLAunicodeStringCoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.brunel.exceptions.IncompleteObjectDataException;
+import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
+import uk.ac.brunel.encoding.Vector3DCoder;
 import uk.ac.brunel.federates.SpaceportFederate;
 import uk.ac.brunel.interactions.MSGCargoTransferComplete;
 import uk.ac.brunel.interactions.MSGLandingPermission;
@@ -23,44 +27,79 @@ import uk.ac.brunel.types.SpaceTimeCoordinateState;
  * @author Hridyanshu Aatreya
  */
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
-public class Spaceport extends PhysicalEntity implements SimEntity {
+public class Spaceport extends PropertyChangeSubject implements SimEntity {
     private static final Logger logger = LoggerFactory.getLogger(Spaceport.class);
 
     // Power load of the spaceport that is incurred during its operational stages in kilowatts (kW).
     private static final double POWER_RATING = 0.092;
+    private static final short IDLE_LEVEL_PRIORY = 5;
+    private static final short PEAK_LEVEL_PRIORITY = 0;
     private static final double LUNAR_GRAVITATIONAL_PULL = -1.625;
-    private static final int MAX_COOLDOWN_TIME = 8;
 
-    private final SpaceportFederate federate;
+    private static final short COOLDOWN_TIME_LIMIT = 8;
+
+    private SpaceportFederate federate;
+    private SpaceportArm arm;
 
     private double allocatedPower;
-    private SpaceportArm arm;
     private String occupyingLander;
 
-    private int departureCooldownTimer;
+    private short powerRequestCooldownTimer;
+    private short departureCooldownTimer;
     private OperationalState preSuspendedOperationalState;
     private OperationalState currentOperationalState;
 
-    private Spaceport(Builder builder) {
-        federate = builder.spFederate;
+    /* SpaceFOM PhysicalObject fields exposed to the RTI. */
+    @Attribute(name = "name", coder = HLAunicodeStringCoder.class)
+    private String name;
 
-        initSpaceportMetadata(builder);
-        createListeners();
+    @Attribute(name = "type", coder = HLAunicodeStringCoder.class)
+    private String type;
+
+    @Attribute(name = "status", coder = HLAunicodeStringCoder.class)
+    private String status;
+
+    @Attribute(name = "parent_reference_frame", coder = HLAunicodeStringCoder.class)
+    private String parentReferenceFrame;
+
+    @Attribute(name = "state", coder = SpaceTimeCoordinateStateCoder.class)
+    private SpaceTimeCoordinateState state;
+
+    @Attribute(name = "acceleration", coder = Vector3DCoder.class)
+    private Vector3D acceleration;
+
+    public Spaceport() {
+        name = "";
+        type = "";
+        status = "";
+        parentReferenceFrame = "";
+        state = new SpaceTimeCoordinateState();
+        acceleration = Vector3D.of(0, 0, 0);
     }
 
-    private void initSpaceportMetadata(Builder builder) {
-        setName(builder.spName);
-        setStatus("Available");
-        setType("Spaceport");
-        setParentReferenceFrame(builder.spParentReferenceFrame);
-        setState(builder.spState);
-        setAcceleration(Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL));
+    public Spaceport(String spaceportName, SpaceTimeCoordinateState spaceportState, SpaceportFederate spaceportFederate, String armName) {
+        this();
+
+        this.federate = spaceportFederate;
+        initSpaceportMetadata(spaceportName, spaceportState);
+        createListeners();
+
+        arm = new SpaceportArm(armName, name);
+    }
+
+    private void initSpaceportMetadata(String spName, SpaceTimeCoordinateState spState) {
+        name = spName;
+        status = "Available";
+        type = "Spaceport";
+        parentReferenceFrame = "AitkenBasinLocalFixed";
+        state = spState;
+        acceleration = Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL);
+
         occupyingLander = "";
-        allocatedPower = 0;
+        allocatedPower = 10.0;
+        powerRequestCooldownTimer = 0;
         currentOperationalState = preSuspendedOperationalState = OperationalState.AVAILABLE;
         departureCooldownTimer = 0;
-
-        arm = new SpaceportArm(builder.spArmName, getName());
     }
 
     private void createListeners() {
@@ -71,18 +110,23 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
     }
 
     public synchronized void processLandingRequest(String landerName) {
-        if (currentOperationalState == OperationalState.AVAILABLE && !occupyingLander.isEmpty()) {
+        OperationalVerdict verdict;
+
+        if (currentOperationalState == OperationalState.AVAILABLE && occupyingLander.isEmpty()) {
             occupyingLander = landerName;
+            verdict = OperationalVerdict.ACCEPTED;
             nextState();
         } else {
-            MSGLandingPermission permissionRejected = new MSGLandingPermission(getName(), landerName, OperationalVerdict.REJECTED);
-            try {
-                federate.sendInteraction(permissionRejected);
-            } catch (FederateNotExecutionMember | InteractionParameterNotDefined | RestoreInProgress |
-                     InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RTIinternalError |
-                     SaveInProgress e) {
-                throw new IllegalStateException("Failed to dispatch landing permission REJECT notification.", e);
-            }
+            verdict = OperationalVerdict.REJECTED;
+        }
+
+        try {
+            MSGLandingPermission permission = new MSGLandingPermission(name, landerName, verdict);
+            federate.sendInteraction(permission);
+        } catch (FederateNotExecutionMember | InteractionParameterNotDefined | RestoreInProgress |
+                 InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RTIinternalError |
+                 SaveInProgress e) {
+            throw new IllegalStateException("Failed to dispatch landing permission REJECT notification.", e);
         }
     }
 
@@ -92,22 +136,28 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         }
     }
 
-    public synchronized void setAllocatedPower(double amount) {
+    public synchronized void onPowerAllocation(double amount) {
         allocatedPower = amount;
+        logger.debug("Allocated {} kW of power", amount);
+
+        if (amount < powerConsumption()) {
+            powerRequestCooldownTimer = COOLDOWN_TIME_LIMIT;
+        }
     }
 
     public synchronized void initiateCargoTransfer() {
         arm.start();
     }
 
-    // TODO
     public synchronized void landerTakeoff() {
 
     }
 
     @Override
     public void update() {
-        requestPower();
+        if (!powerEmbargoInEffect()) {
+            requestPower();
+        }
 
         if (currentOperationalState == OperationalState.AWAITING_PICKUP_ROVER_DEPARTURE
                 || currentOperationalState == OperationalState.AWAITING_DELIVERY_ROVER_DEPARTURE) {
@@ -129,6 +179,8 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         if (currentOperationalState == OperationalState.SUSPENDED && isServicePowerRequirementSatisfied()) {
             resumeOperations();
         }
+
+        allocatedPower = 10.0;
     }
 
     private void operateArm() {
@@ -137,10 +189,27 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         }
     }
 
+    private boolean powerEmbargoInEffect() {
+        if (powerRequestCooldownTimer > 0) {
+            powerRequestCooldownTimer--;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void requestPower() {
         double powerRequirement = powerConsumption();
         try {
-            UCFPowerRequest powerRequest = new UCFPowerRequest(getName(), powerRequirement, 0);
+            int priority;
+
+            if (currentOperationalState ==  OperationalState.LOADING_CARGO || currentOperationalState == OperationalState.UNLOADING_CARGO) {
+                priority = IDLE_LEVEL_PRIORY;
+            } else {
+                priority = PEAK_LEVEL_PRIORITY;
+            }
+
+            UCFPowerRequest powerRequest = new UCFPowerRequest(getName(), powerRequirement, priority);
             federate.sendInteraction(powerRequest);
         } catch (FederateNotExecutionMember | InteractionParameterNotDefined | RestoreInProgress |
                  InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | RTIinternalError |
@@ -207,7 +276,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
             case UNLOADING_CARGO:
                 newStatus = "Awaiting Rover Departure";
                 currentOperationalState = OperationalState.AWAITING_PICKUP_ROVER_DEPARTURE;
-                departureCooldownTimer = MAX_COOLDOWN_TIME;
+                departureCooldownTimer = COOLDOWN_TIME_LIMIT;
                 break;
             case AWAITING_PICKUP_ROVER_DEPARTURE:
                 newStatus = "Awaiting Delivery Rover Allocation";
@@ -224,7 +293,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
             case LOADING_CARGO:
                 newStatus = "Awaiting Delivery Rover Departure";
                 currentOperationalState = OperationalState.AWAITING_DELIVERY_ROVER_DEPARTURE;
-                departureCooldownTimer = MAX_COOLDOWN_TIME;
+                departureCooldownTimer = COOLDOWN_TIME_LIMIT;
                 break;
             case AWAITING_DELIVERY_ROVER_DEPARTURE:
                 newStatus = "Hosting Lander Takeoff";
@@ -266,7 +335,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         private int cargoTransferStep;
 
         private SpaceportArm(String name, String parentName) {
-            setName(name);
+            super.setName(name);
             setParentName(parentName);
         }
 
@@ -280,7 +349,7 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
             try {
                 MSGCargoTransferComplete transferComplete = new MSGCargoTransferComplete();
                 federate.sendInteraction(transferComplete);
-                logger.debug("Spaceport arm <{}> has completed transferring cargo.", getName());
+                logger.debug("Spaceport arm <{}> has completed transferring cargo.", name);
 
                 nextState();
             } catch (FederateNotExecutionMember | InteractionParameterNotDefined | RestoreInProgress |
@@ -302,64 +371,52 @@ public class Spaceport extends PhysicalEntity implements SimEntity {
         }
     }
 
-    public static class Builder {
-        private SpaceportFederate spFederate;
-        private String spName;
-        private String spParentReferenceFrame;
-        private SpaceTimeCoordinateState spState;
-        private String spArmName;
+    public String getName() {
+        return name;
+    }
 
-        public Builder federate(SpaceportFederate federate) {
-            spFederate = federate;
-            return this;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-        public Builder name(String value) {
-            spName = value;
-            return this;
-        }
+    public String getType() {
+        return type;
+    }
 
-        public Builder parentReferenceFrame(String value) {
-            spParentReferenceFrame = value;
-            return this;
-        }
+    public void setType(String type) {
+        this.type = type;
+    }
 
-        public Builder spaceTimeCoordinateState(SpaceTimeCoordinateState value) {
-            spState = value;
-            return this;
-        }
+    public String getStatus() {
+        return status;
+    }
 
-        public Builder arm(String armName) {
-            spArmName = armName;
-            return this;
-        }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-        public Spaceport build () {
-            validate();
-            return new Spaceport(this);
-        }
+    public String getParentReferenceFrame() {
+        return parentReferenceFrame;
+    }
 
-        private void validate() {
-            if (spName == null) {
-                throw new IncompleteObjectDataException("Missing field <name> for Spaceport");
-            }
+    public void setParentReferenceFrame(String parentReferenceFrame) {
+        this.parentReferenceFrame = parentReferenceFrame;
+    }
 
-            if (spFederate == null) {
-                throw new IncompleteObjectDataException("Missing field <federate> for Spaceport \"" + spName + "\"");
-            }
+    public SpaceTimeCoordinateState getState() {
+        return state;
+    }
 
-            if (spParentReferenceFrame == null) {
-                throw new IncompleteObjectDataException("Missing field <parentReferenceFrame> for Spaceport \"" + spName + "\"");
-            }
+    public void setState(SpaceTimeCoordinateState state) {
+        this.state = state;
+    }
 
-            if (spState == null) {
-                throw new IncompleteObjectDataException("Missing field <state> for Spaceport \"" + spName + "\"");
-            }
+    public Vector3D getAcceleration() {
+        return acceleration;
+    }
 
-            if (spArmName == null) {
-                throw new IncompleteObjectDataException("Missing name for Spaceport's arm object \"" + spName + "\"");
-            }
-        }
+    public void setAcceleration(Vector3D acceleration) {
+        this.acceleration = acceleration;
     }
 
     public Object getArmObject() {

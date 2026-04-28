@@ -48,10 +48,6 @@ class LanderTest {
     Lander createTestLander() {
         FederateConfiguration config = FederateConfiguration.Factory.create(confFile);
         LanderFederate federate = new LanderFederate(new SEEFederateAmbassador(), config);
-        return new Lander.Builder()
-                .name("TestLander")
-                .federate(federate)
-                .parentReferenceFrame("AitkenBasinLocalFixed")
-                .build();
+        return new Lander("Brunel_Lander", federate);
     }
 }

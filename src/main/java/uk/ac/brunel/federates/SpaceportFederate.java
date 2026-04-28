@@ -64,7 +64,7 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         // Publish/Subscribe object and interaction classes here using methods inherited from the late joiner class.
         // Register the appropriate event listeners just before or at this stage to be notified when a remote object
         // instance is created or a certain interaction is received.
-        publishObjectClass(PhysicalEntity.class);
+        publishObjectClass(Spaceport.class);
         publishObjectClass(PhysicalInterface.class);
         subscribeObjectClass(DynamicalEntity.class);
 
@@ -90,19 +90,14 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     @Override
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, NotConnected, RTIinternalError, SaveInProgress, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved {
         // Create all the object instances pertinent to your federate and the federation execution at large.
-        for (int i = 1; i <= SPACEPORT_COUNT; ++i) {
+        for (int i = 1; i < SPACEPORT_COUNT + 1; ++i) {
             SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
             defaultState.setPosition(SPAWN_POINTS[i - 1]);
 
             String spaceportName = SPACEPORT_NAME_SEQUENCE + i;
             String spaceportArmName = SPACEPORT_ARM_NAME_SEQUENCE + i;
-            Spaceport s = new Spaceport.Builder()
-                    .federate(this)
-                    .name(spaceportName)
-                    .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .spaceTimeCoordinateState(defaultState)
-                    .arm(spaceportArmName)
-                    .build();
+
+            Spaceport s = new Spaceport(spaceportName, defaultState, this, spaceportArmName);
             registerObjectInstance(s, s.getName());
 
             Object spArm = s.getArmObject();
@@ -115,6 +110,7 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     public void update() {
         // This segment is run every time the simulation is updated. Any jobs this federate must perform while running
         // will go here.
+        spaceports.forEach(Spaceport::update);
     }
 
     public static void main(String[] args) {
