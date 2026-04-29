@@ -3,37 +3,35 @@ package uk.ac.brunel.spaceport.systems;
 import hla.rti1516_2025.exceptions.*;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.see.skf.core.SKBaseFederate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.brunel.core.AbstractSimulationSystem;
 import uk.ac.brunel.interactions.MSGCargoPickupJob;
-import uk.ac.brunel.spaceport.listeners.CargoPickupJobAcceptedListener;
+import uk.ac.brunel.spaceport.Spaceport;
 import uk.ac.brunel.types.CargoType;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class VehicleAssignmentRequestSystem extends AbstractSimulationSystem {
+    private static final Logger logger = LoggerFactory.getLogger(VehicleAssignmentRequestSystem.class);
+
     private static final short COOLDOWN_LIMIT = 10;
     private static final Vector3D WAREHOUSE_COORDINATES = Vector3D.of(801, 3053, -5532);
 
-    private final String entityName;
+    private final String spaceportName;
     private final Vector3D entityCoordinates;
-    private final CargoTransferSystem transferSystem;
     private final SKBaseFederate federate;
 
-    private short requestType;
+    private final AtomicInteger operatingMode;
     private short vehicleRequestCooldownTimer;
 
-    public VehicleAssignmentRequestSystem(String entityName, Vector3D entityCoordinates, CargoTransferSystem transferSystem, SKBaseFederate federate) {
-        this.entityName = entityName;
-        this.entityCoordinates = entityCoordinates;
-        this.transferSystem = transferSystem;
+    public VehicleAssignmentRequestSystem(Spaceport spaceport, Vector3D spaceportCoordinates, SKBaseFederate federate) {
+        this.entityCoordinates = spaceportCoordinates;
         this.federate = federate;
-        requestType = 0;
 
         vehicleRequestCooldownTimer = 0;
-
-        createEventListeners();
-    }
-
-    private void createEventListeners() {
-        federate.addInteractionListener(new CargoPickupJobAcceptedListener(this));
+        spaceportName = spaceport.getName();
+        operatingMode = spaceport.getOperatingMode();
     }
 
     @Override
@@ -50,19 +48,25 @@ public class VehicleAssignmentRequestSystem extends AbstractSimulationSystem {
         String resourceName = CargoType.randomType().name();
 
         MSGCargoPickupJob job = new MSGCargoPickupJob();
-        job.setRequestingObject(entityName);
+        job.setRequestingObject(spaceportName);
         job.setCargoType(resourceName);
 
-        if (requestType == 0) {
+        if (operatingMode.get() == 0) {
             job.setPickupLocation(entityCoordinates);
             job.setDeliveryLocation(WAREHOUSE_COORDINATES);
-        } else if (requestType == 1){
+        } else if (operatingMode.get() == 1){
             job.setPickupLocation(WAREHOUSE_COORDINATES);
             job.setDeliveryLocation(entityCoordinates);
         }
 
         dispatchInteraction(job);
         vehicleRequestCooldownTimer = COOLDOWN_LIMIT;
+
+        if (operatingMode.get() == 0) {
+            logger.info("<{}> dispatched a cargo pickup mission.", spaceportName);
+        } else {
+            logger.info("<{}> dispatched a cargo delivery mission.", spaceportName);
+        }
     }
 
     private boolean isEmbargoInEffect() {
@@ -78,23 +82,7 @@ public class VehicleAssignmentRequestSystem extends AbstractSimulationSystem {
         }
     }
 
-    // Type 0: Pickup
-    // Type 1: Delivery
-    public synchronized void flipRequestType() {
-        if (requestType == 0) {
-            requestType = 1;
-        } else {
-            requestType = 0;
-        }
-    }
-
-    public synchronized void vehicleAssigned(String vehicleName) {
-        transferSystem.vehicleAssigned(vehicleName);
-        flipRequestType();
-        disable();
-    }
-
-    public String getEntityName() {
-        return entityName;
+    public String getSpaceportName() {
+        return spaceportName;
     }
 }

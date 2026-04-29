@@ -4,40 +4,44 @@ import hla.rti1516_2025.exceptions.*;
 import org.see.skf.core.SKBaseFederate;
 import uk.ac.brunel.core.AbstractSimulationSystem;
 import uk.ac.brunel.interactions.MSGCargoTransferComplete;
+import uk.ac.brunel.spaceport.LanderLiaison;
+import uk.ac.brunel.spaceport.Spaceport;
 import uk.ac.brunel.spaceport.SpaceportArm;
-import uk.ac.brunel.spaceport.listeners.CargoTransferReadyListener;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CargoTransferSystem extends AbstractSimulationSystem {
-    private final String entityName;
+    private final Spaceport spaceport;
+    private final String spaceportName;
     private final SpaceportArm arm;
+    private final LanderLiaison landerLiaison;
     private final SKBaseFederate federate;
 
+    private final AtomicInteger operatingMode;
     private String assignedVehicle;
 
-    public CargoTransferSystem(String entityName, SpaceportArm arm, SKBaseFederate federate) {
-        this.entityName = entityName;
+    public CargoTransferSystem(Spaceport spaceport, SpaceportArm arm, SKBaseFederate federate) {
+        this.spaceport = spaceport;
         this.arm = arm;
         this.federate = federate;
 
         assignedVehicle = "";
-
-        createEventListeners();
-    }
-
-    private void createEventListeners() {
-        federate.addInteractionListener(new CargoTransferReadyListener(this));
+        spaceportName = spaceport.getName();
+        landerLiaison = spaceport.getLanderLiaison();
+        operatingMode = spaceport.getOperatingMode();
     }
 
     @Override
     public void update() {
         if (!arm.isRunning() && !arm.cleanupPeriodActive()) {
             dispatchTransferCompletionNotification();
+            postExecutionTasks();
             disable();
         }
     }
 
     private void dispatchTransferCompletionNotification() {
-        MSGCargoTransferComplete transferComplete = new MSGCargoTransferComplete(assignedVehicle, entityName);
+        MSGCargoTransferComplete transferComplete = new MSGCargoTransferComplete(assignedVehicle, spaceportName);
         dispatchInteraction(transferComplete);
     }
 
@@ -50,6 +54,18 @@ public class CargoTransferSystem extends AbstractSimulationSystem {
         }
     }
 
+    private void postExecutionTasks() {
+        if (operatingMode.get() == 0) {
+            spaceport.flipOperatingMode();
+
+            VehicleAssignmentRequestSystem vehicleAssignmentRequestSystem = spaceport.getVehicleAssignmentRequestSystem();
+            vehicleAssignmentRequestSystem.enable();
+        } else {
+            spaceport.flipOperatingMode();
+            landerLiaison.initiateDeparture();
+        }
+    }
+
     public synchronized void vehicleAssigned(String vehicleName) {
         assignedVehicle = vehicleName;
     }
@@ -59,8 +75,8 @@ public class CargoTransferSystem extends AbstractSimulationSystem {
         enable();
     }
 
-    public String getEntityName() {
-        return entityName;
+    public String getSpaceportName() {
+        return spaceportName;
     }
 
     public String getAssignedVehicle() {

@@ -5,7 +5,10 @@ import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
-import uk.ac.brunel.models.Spaceport;
+import uk.ac.brunel.core.PhysicalEntity;
+import uk.ac.brunel.interactions.*;
+import uk.ac.brunel.models.PhysicalInterface;
+import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 import java.io.File;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -32,12 +35,51 @@ public class SpaceportFederate extends SEELateJoinerFederate {
 
     @Override
     public void declareClasses() throws FederateNotExecutionMember, AttributeNotDefined, ObjectClassNotDefined, RestoreInProgress, NameNotFound, NotConnected, RTIinternalError, InvalidObjectClassHandle, SaveInProgress, InvalidInteractionClassHandle, InteractionClassNotDefined, FederateServiceInvocationsAreBeingReportedViaMOM {
+        publishObjectClass(PhysicalEntity.class);
+        publishObjectClass(PhysicalInterface.class);
+        subscribeObjectClass(PhysicalEntity.class);
 
+        publishInteractionClass(UCFPowerRequest.class);
+        publishInteractionClass(MSGCargoPickupJob.class);
+        publishInteractionClass(MSGCargoTransferComplete.class);
+        publishInteractionClass(MSGLanderDepartureRequest.class);
+        publishInteractionClass(MSGLandingPermission.class);
+        // publishInteractionClass(MSGLogisticsDeliveryRequest.class);
+
+        subscribeInteractionClass(MSGCargoPickupJobAccepted.class);
+        subscribeInteractionClass(MSGCargoPickupJobRejected.class);
+        subscribeInteractionClass(MSGCargoTransferReady.class);
+        subscribeInteractionClass(MSGLandingRequest.class);
+        subscribeInteractionClass(MSGLanderTakeoff.class);
+        subscribeInteractionClass(MSGLanderTouchdown.class);
+        // subscribeInteractionClass(MSGLogisticsDeliveryResponse.class);
+        subscribeInteractionClass(UCFPowerAllocation.class);
+        subscribeInteractionClass(UCFLoadSheddingEvent.class);
     }
 
     @Override
     public void declareObjectInstances() throws FederateNotExecutionMember, ObjectClassNotPublished, ObjectClassNotDefined, RestoreInProgress, ObjectInstanceNotKnown, IllegalName, ObjectInstanceNameInUse, ObjectInstanceNameNotReserved, NotConnected, RTIinternalError, SaveInProgress {
+        for (int i = 1; i < SPACEPORT_COUNT + 1; ++i) {
+            SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
+            defaultState.setPosition(SPAWN_POINTS[i - 1]);
 
+            String spaceportName = SPACEPORT_NAME_SEQUENCE + i;
+            String spaceportArmName = SPACEPORT_ARM_NAME_SEQUENCE + i;
+
+            Spaceport s = new Spaceport.Builder()
+                    .federate(this)
+                    .name(spaceportName)
+                    .parentReferenceFrame("AitkenBasinLocalFixed")
+                    .spawnPoint(defaultState)
+                    .arm(spaceportArmName)
+                    .build();
+
+            registerObjectInstance(s, s.getName());
+
+            SpaceportArm sArm = s.getArm();
+            registerObjectInstance(sArm, sArm.getName());
+            spaceports.add(s);
+        }
     }
 
     @Override
@@ -47,7 +89,7 @@ public class SpaceportFederate extends SEELateJoinerFederate {
 
     public static void main(String[] args) {
         FederateConfiguration config = FederateConfiguration.Factory.create(confFile);
-        uk.ac.brunel.federates.SpaceportFederate federate = new uk.ac.brunel.federates.SpaceportFederate(new SEEFederateAmbassador(), config);
+        SpaceportFederate federate = new SpaceportFederate(new SEEFederateAmbassador(), config);
         federate.configureAndStart();
     }
 }

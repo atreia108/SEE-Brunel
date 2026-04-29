@@ -2,19 +2,22 @@ package uk.ac.brunel.spaceport.systems;
 
 import hla.rti1516_2025.exceptions.*;
 import org.see.skf.core.SKBaseFederate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.brunel.core.AbstractSimulationSystem;
 import uk.ac.brunel.interactions.UCFPowerRequest;
 import uk.ac.brunel.spaceport.Powerable;
-import uk.ac.brunel.spaceport.listeners.PowerAllocationListener;
 
 public class PowerSystem extends AbstractSimulationSystem {
+    private static final Logger logger = LoggerFactory.getLogger(PowerSystem.class);
+
     private static final short COOLDOWN_LIMIT = 8;
 
     private final String entityName;
     private final Powerable entity;
     private final SKBaseFederate federate;
 
-    private double allocatedPower;
+    private double reserveAmount;
     private short powerRequestCooldownTimer;
 
     public PowerSystem(String entityName, Powerable entity, SKBaseFederate federate) {
@@ -22,40 +25,37 @@ public class PowerSystem extends AbstractSimulationSystem {
         this.entity = entity;
         this.federate = federate;
 
-        allocatedPower = 0.0;
+        // TODO - Change to 0 again!!
+        // reserveAmount = 0.0;
+        reserveAmount = Double.MAX_VALUE;
+
         powerRequestCooldownTimer = 0;
 
-        createEventListeners();
         enable();
-    }
-
-    private void createEventListeners() {
-        federate.addInteractionListener(new PowerAllocationListener(this));
     }
 
     @Override
     public void update() {
         if (embargoInEffect()) {
-            powerRequestCooldownTimer--;
             return;
         }
 
-        if (allocatedPower < (0.5 * entity.powerConsumption())) {
+        if (reserveAmount < (0.5 * entity.powerConsumption())) {
             requestPower();
             powerRequestCooldownTimer = COOLDOWN_LIMIT;
         }
     }
 
     private boolean embargoInEffect() {
-        return powerRequestCooldownTimer > 0;
+        return powerRequestCooldownTimer-- > 0;
     }
 
     public synchronized double consume(double amount) {
-        double threshold = 0.3 * allocatedPower;
+        double threshold = 0.3 * reserveAmount;
 
         // Go into reserve mode where until a new power request brings in more power.
-        if ((allocatedPower - amount) > threshold) {
-            allocatedPower -= amount;
+        if ((reserveAmount - amount) > threshold) {
+            reserveAmount -= amount;
             return amount;
         } else {
             return 0;
@@ -63,7 +63,8 @@ public class PowerSystem extends AbstractSimulationSystem {
     }
 
     public synchronized void allocate(double amount) {
-        allocatedPower += amount;
+        logger.info("{} was allocated <{}> kW.", entityName, amount);
+        reserveAmount += amount;
     }
 
     private void requestPower() {
@@ -71,6 +72,8 @@ public class PowerSystem extends AbstractSimulationSystem {
         int priorityLevel = entity.powerPriorityLevel();
         UCFPowerRequest powerRequest = new UCFPowerRequest(entityName, amount, priorityLevel);
         dispatchInteraction(powerRequest);
+
+        logger.info("Requested <{}> kW of power with priority level {}. Residual amount: {}.", amount, priorityLevel, reserveAmount);
     }
 
     private void dispatchInteraction(Object interaction) {

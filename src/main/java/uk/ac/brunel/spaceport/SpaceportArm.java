@@ -42,7 +42,7 @@ public class SpaceportArm extends PhysicalInterface implements SimulationEntity 
     }
 
     public boolean cleanupPeriodActive() {
-        return cleanupPeriodCounter-- > 0;
+        return cleanupPeriodCounter > 0;
     }
 
     @Override
@@ -51,6 +51,10 @@ public class SpaceportArm extends PhysicalInterface implements SimulationEntity 
             runTransferOperation();
         } else {
             powerSystem.consume(idleConsumptionAmount());
+        }
+
+        if (cleanupPeriodActive()) {
+            cleanupPeriodCounter--;
         }
     }
 

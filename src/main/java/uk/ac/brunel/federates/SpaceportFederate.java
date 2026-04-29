@@ -28,6 +28,7 @@ import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
+import uk.ac.brunel.core.PhysicalEntity;
 import uk.ac.brunel.interactions.*;
 import uk.ac.brunel.models.*;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
