@@ -17,6 +17,7 @@ import uk.ac.brunel.interactions.MSGLandingRequest;
 import uk.ac.brunel.listeners.DepartureRequestListener;
 import uk.ac.brunel.listeners.SpaceportAssignmentListener;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
+import uk.ac.brunel.core.SimulationEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.function.Supplier;
  * @author Hridyanshu Aatreya
  */
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity.DynamicalEntity")
-public class Lander extends PropertyChangeSubject implements SimEntity {
+public class Lander extends PropertyChangeSubject implements SimulationEntity {
     private static final Logger logger = LoggerFactory.getLogger(Lander.class);
 
     public final Supplier<Vector3D> holdingWaypointGenerator = this::createHoldingWaypoint;
@@ -110,32 +111,6 @@ public class Lander extends PropertyChangeSubject implements SimEntity {
 
         operationalState = OperationalState.APPROACHING;
     }
-
-    /*
-    public Lander(Builder builder) {
-        rng = new Random();
-        spaceports = new ArrayList<>();
-        federate = builder.ldFederate;
-        flightComputer = new FlightComputer();
-        cooldownTime = 0;
-
-        initLanderMetadata(builder);
-        createListeners();
-    }
-
-    private void initLanderMetadata(Builder builder) {
-        setName(builder.ldName);
-        setStatus("Approaching");
-        setType("Lander");
-        setParentReferenceFrame(builder.ldParentReferenceFrame);
-        setAcceleration(Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL));
-
-        Vector3D spawnPoint = createHoldingWaypoint();
-        getState().setPosition(spawnPoint);
-
-        operationalState = OperationalState.APPROACHING;
-    }
-     */
 
     private void createListeners() {
         federate.addInteractionListener(new SpaceportAssignmentListener(this));

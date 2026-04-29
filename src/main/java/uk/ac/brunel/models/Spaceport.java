@@ -19,6 +19,7 @@ import uk.ac.brunel.listeners.*;
 import uk.ac.brunel.types.CargoType;
 import uk.ac.brunel.types.OperationalVerdict;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
+import uk.ac.brunel.core.SimulationEntity;
 
 /**
  * Simulation model of a Lunar Spaceport.
@@ -26,7 +27,7 @@ import uk.ac.brunel.types.SpaceTimeCoordinateState;
  * @author Hridyanshu Aatreya
  */
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
-public class Spaceport extends PropertyChangeSubject implements SimEntity {
+public class Spaceport extends PropertyChangeSubject implements SimulationEntity {
     private static final Logger logger = LoggerFactory.getLogger(Spaceport.class);
 
     // Power load of the spaceport that is incurred during its operational stages in kilowatts (kW).
@@ -386,7 +387,7 @@ public class Spaceport extends PropertyChangeSubject implements SimEntity {
     }
 
     @ObjectClass(name = "HLAobjectRoot.PhysicalInterface")
-    private class SpaceportArm extends PhysicalInterface implements SimEntity {
+    private class SpaceportArm extends PhysicalInterface implements SimulationEntity {
         // Power load of the arm that is incurred during its operational stages in kilowatts (kW).
         private static final double IDLE_POWER_RATING = 0.435;
         private static final double PEAK_POWER_RATING = 2.000;

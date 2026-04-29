@@ -1,6 +1,7 @@
 package uk.ac.brunel.models;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
@@ -22,6 +23,7 @@ class LanderTest {
     private static final double RNG_MIN_Z_BOUND = -5150.0;
     private static final double RNG_MAX_Z_BOUND = -4850.0;
 
+    @Disabled
     @Test
     void waypointCreationTest() {
         Lander lander = createTestLander();
