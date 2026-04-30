@@ -2,6 +2,10 @@ package uk.ac.brunel.types;
 
 import java.util.Random;
 
+/**
+ * A type of cargo that can be carried by the FACENS lunar rover.
+ *
+ */
 public enum CargoType {
     /** Generic liquid coolant. */
     COOLANT,

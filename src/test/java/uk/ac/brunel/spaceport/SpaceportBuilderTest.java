@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
+ * Tests for generating spaceport objects.
  *
  * @author Hridyanshu Aatreya
  */

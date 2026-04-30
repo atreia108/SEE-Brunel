@@ -17,6 +17,11 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Simulation model of a Lunar Lander Module.
+ *
+ * @author Hridyanshu Aatreya
+ */
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class Lander extends PhysicalEntity implements SimulationEntity {
     public static final String DEFAULT_NAME_SEQUENCE = "brunel_lander_";

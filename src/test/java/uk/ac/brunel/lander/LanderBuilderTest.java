@@ -12,6 +12,11 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Tests for generating Lander objects.
+ *
+ * @author Hridyanshu Aatreya
+ */
 class LanderBuilderTest {
     private static LanderFederate federate;
 

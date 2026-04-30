@@ -1,3 +1,34 @@
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2026 Brunel University of London
+ * All rights reserved.
+
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *	  this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its
+ * 	  contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ */
+
 package uk.ac.brunel.lander.systems;
 
 import hla.rti1516_2025.exceptions.*;
@@ -16,14 +47,18 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Used by a lander to manage movement and chart routes between a starting location and an assigned spaceport.
+ *
+ * @author Hridyanshu Aatreya
+ */
 public class NavigationSystem extends AbstractSimulationSystem {
     private static final Logger logger = LoggerFactory.getLogger(NavigationSystem.class);
 
     // The velocity of the lander expressed in m/s.
     // For a soft-moon landing, the lander should decelerate to less than 100 mph.
-    // TODO - Adjust velocity values to something sober.
-    private static final double VELOCITY = 200.0;
-    private static final double DISTANCE_THRESHOLD = 500.0;
+    private static final double VELOCITY = 50.0;
+    private static final double DISTANCE_THRESHOLD = 85.0;
 
     private final AtomicBoolean transitInProgress;
     private final AtomicInteger operatingMode;
@@ -97,11 +132,14 @@ public class NavigationSystem extends AbstractSimulationSystem {
 
     private void postExecutionTasks() {
         if (operatingMode.get() == 1) {
+            logger.info("<{}> is departing from <{}>.", lander.getName(), assignedSpaceportName);
+
             assignedSpaceportName = "";
             updateLanderStatusAtRti("Approaching");
             spaceportAllocationRequestSystem.enable();
         } else {
             updateLanderStatusAtRti("Servicing");
+            logger.info("<{}> has arrived at <{}>.", lander.getName(), assignedSpaceportName);
             onLanderTouchdown();
         }
 
@@ -140,7 +178,7 @@ public class NavigationSystem extends AbstractSimulationSystem {
             Vector3D spawnPoint = lander.getSpawnPoint();
             chartRoute(spawnPoint);
 
-            logger.info("[DEPARTURE] <{}> goal set: {}.", lander.getName(), spawnPoint);
+            logger.info("[DEPARTURE] <{}> goal set: {} (Spawn Point).", lander.getName(), spawnPoint);
 
             MSGLanderTakeoff takeoffNotification = new MSGLanderTakeoff(lander.getName(), assignedSpaceportName);
             dispatchInteraction(takeoffNotification);

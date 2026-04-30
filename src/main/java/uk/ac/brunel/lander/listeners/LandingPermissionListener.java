@@ -1,16 +1,23 @@
 package uk.ac.brunel.lander.listeners;
 
-import hla.rti1516_2025.exceptions.*;
 import org.see.skf.core.InteractionListener;
 import org.see.skf.core.SKBaseFederate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.brunel.interactions.MSGLandingPermission;
-import uk.ac.brunel.interactions.MSGSpaceportArrivalCommitted;
 import uk.ac.brunel.lander.Lander;
 import uk.ac.brunel.lander.systems.NavigationSystem;
 import uk.ac.brunel.lander.systems.SpaceportAllocationRequestSystem;
 import uk.ac.brunel.types.OperationalVerdict;
 
+/**
+ * Listens for MSGLandingPermission interaction sent to a lander by the spaceport it is currently situated on.
+ *
+ * @author Hridyanshu Aatreya
+ */
 public class LandingPermissionListener implements InteractionListener {
+    private static final Logger logger = LoggerFactory.getLogger(LandingPermissionListener.class);
+
     private final Lander lander;
     private final SKBaseFederate federate;
     private final SpaceportAllocationRequestSystem spaceportAllocationRequestSystem;
@@ -38,28 +45,13 @@ public class LandingPermissionListener implements InteractionListener {
 
             lander.setStatus("Landing");
 
-            // TODO WATCH: This line causes a "benign" exception from time to time.
+            // WATCH: This line causes a "benign" StringIndexOutOfBoundsException from time to time.
+            // This does not negatively affect the federate in any way beyond a logged exception.
             try {
                 federate.updateObjectInstance(lander);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("[IGNORE KNOWN EXCEPTION] {}", e.getMessage());
             }
-
-            confirmArrival(spaceportName);
-        }
-    }
-
-    private void confirmArrival(String spaceportName) {
-        MSGSpaceportArrivalCommitted commitment = new MSGSpaceportArrivalCommitted(lander.getName(), spaceportName);
-        dispatchInteraction(commitment);
-    }
-
-    private void dispatchInteraction(Object interaction) {
-        try {
-            federate.sendInteraction(interaction);
-        } catch (FederateNotExecutionMember | RTIinternalError | InteractionParameterNotDefined | RestoreInProgress |
-                 InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | SaveInProgress e) {
-            throw new IllegalStateException(e);
         }
     }
 }
