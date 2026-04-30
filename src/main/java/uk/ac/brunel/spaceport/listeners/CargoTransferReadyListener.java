@@ -32,6 +32,8 @@
 package uk.ac.brunel.spaceport.listeners;
 
 import org.see.skf.core.InteractionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.brunel.interactions.MSGCargoTransferReady;
 import uk.ac.brunel.spaceport.systems.CargoTransferSystem;
 import uk.ac.brunel.spaceport.systems.VehicleAssignmentRequestSystem;
@@ -43,6 +45,8 @@ import uk.ac.brunel.spaceport.systems.VehicleAssignmentRequestSystem;
  * @author Hridyanshu Aatreya
  */
 public class CargoTransferReadyListener implements InteractionListener {
+    private static final Logger logger = LoggerFactory.getLogger(CargoTransferReadyListener.class);
+
     private final VehicleAssignmentRequestSystem vehicleAssignmentRequestSystem;
     private final CargoTransferSystem cargoTransferSystem;
 
@@ -56,6 +60,8 @@ public class CargoTransferReadyListener implements InteractionListener {
         if (interaction instanceof MSGCargoTransferReady transferReady
                 && transferReady.getRequestingObject().equals(cargoTransferSystem.getSpaceportName())
                 && transferReady.getRover().equals(cargoTransferSystem.getAssignedVehicle())) {
+            logger.info("<{}> is ready for cargo transfer at <{}>.", transferReady.getRover(), transferReady.getRequestingObject());
+
             cargoTransferSystem.initiateCargoTransfer();
             vehicleAssignmentRequestSystem.disable();
         }
