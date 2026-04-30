@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
-import uk.ac.brunel.federates.LanderFederate;
 
 import java.io.File;
 

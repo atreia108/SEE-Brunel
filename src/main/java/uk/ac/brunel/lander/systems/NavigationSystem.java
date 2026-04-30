@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.brunel.core.AbstractSimulationSystem;
 import uk.ac.brunel.core.PhysicalEntity;
+import uk.ac.brunel.interactions.MSGLanderTakeoff;
 import uk.ac.brunel.interactions.MSGLanderTouchdown;
 import uk.ac.brunel.lander.Lander;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
@@ -96,6 +97,7 @@ public class NavigationSystem extends AbstractSimulationSystem {
 
     private void postExecutionTasks() {
         if (operatingMode.get() == 1) {
+            assignedSpaceportName = "";
             updateLanderStatusAtRti("Approaching");
             spaceportAllocationRequestSystem.enable();
         } else {
@@ -111,8 +113,6 @@ public class NavigationSystem extends AbstractSimulationSystem {
     private void onLanderTouchdown() {
         MSGLanderTouchdown landerTouchdown = new MSGLanderTouchdown(lander.getName(), assignedSpaceportName);
         dispatchInteraction(landerTouchdown);
-
-        assignedSpaceportName = "";
     }
 
     private void dispatchInteraction(Object interaction) {
@@ -141,6 +141,11 @@ public class NavigationSystem extends AbstractSimulationSystem {
             chartRoute(spawnPoint);
 
             logger.info("[DEPARTURE] <{}> goal set: {}.", lander.getName(), spawnPoint);
+
+            MSGLanderTakeoff takeoffNotification = new MSGLanderTakeoff(lander.getName(), assignedSpaceportName);
+            dispatchInteraction(takeoffNotification);
+
+            enable();
         }
     }
 

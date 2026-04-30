@@ -7,7 +7,7 @@ import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
 import uk.ac.brunel.core.PhysicalEntity;
 import uk.ac.brunel.interactions.*;
-import uk.ac.brunel.models.PhysicalInterface;
+import uk.ac.brunel.core.PhysicalInterface;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 import java.io.File;
@@ -17,8 +17,6 @@ public class SpaceportFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/spaceport.conf");
 
     public static final int SPACEPORT_COUNT = 3;
-    public static final String SPACEPORT_NAME_SEQUENCE = "brunel_spaceport_";
-    public static final String SPACEPORT_ARM_NAME_SEQUENCE = "brunel_spaceport_arm_";
 
     private static final Vector3D[] SPAWN_POINTS = new Vector3D[] {
             Vector3D.of(-536.303710683329, 4219.126819522129, -5648.62109375),
@@ -44,7 +42,6 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         publishInteractionClass(MSGCargoTransferComplete.class);
         publishInteractionClass(MSGLanderDepartureRequest.class);
         publishInteractionClass(MSGLandingPermission.class);
-        // publishInteractionClass(MSGLogisticsDeliveryRequest.class);
 
         subscribeInteractionClass(MSGCargoPickupJobAccepted.class);
         subscribeInteractionClass(MSGCargoPickupJobRejected.class);
@@ -52,9 +49,9 @@ public class SpaceportFederate extends SEELateJoinerFederate {
         subscribeInteractionClass(MSGLandingRequest.class);
         subscribeInteractionClass(MSGLanderTakeoff.class);
         subscribeInteractionClass(MSGLanderTouchdown.class);
-        // subscribeInteractionClass(MSGLogisticsDeliveryResponse.class);
         subscribeInteractionClass(UCFPowerAllocation.class);
         subscribeInteractionClass(UCFLoadSheddingEvent.class);
+        subscribeInteractionClass(MSGSpaceportArrivalCommitted.class);
     }
 
     @Override
@@ -63,8 +60,8 @@ public class SpaceportFederate extends SEELateJoinerFederate {
             SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
             defaultState.setPosition(SPAWN_POINTS[i - 1]);
 
-            String spaceportName = SPACEPORT_NAME_SEQUENCE + i;
-            String spaceportArmName = SPACEPORT_ARM_NAME_SEQUENCE + i;
+            String spaceportName = Spaceport.NAME_SEQUENCE + i;
+            String spaceportArmName = SpaceportArm.NAME_SEQUENCE + i;
 
             Spaceport s = new Spaceport.Builder()
                     .federate(this)

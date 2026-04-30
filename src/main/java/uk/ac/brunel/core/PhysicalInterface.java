@@ -21,7 +21,7 @@
  If not, see http://http://www.gnu.org/licenses/
  *****************************************************************/
 
-package uk.ac.brunel.models;
+package uk.ac.brunel.core;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;

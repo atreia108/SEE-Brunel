@@ -21,7 +21,7 @@
  If not, see http://http://www.gnu.org/licenses/
  *****************************************************************/
 
-package uk.ac.brunel.models;
+package uk.ac.brunel.core;
 
 import uk.ac.brunel.encoding.SpaceTimeCoordinateStateCoder;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;

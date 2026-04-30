@@ -12,12 +12,11 @@ import uk.ac.brunel.types.SpaceTimeCoordinateState;
 import uk.ac.brunel.core.PhysicalEntity;
 import uk.ac.brunel.core.SimulationEntity;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class Spaceport extends PhysicalEntity implements SimulationEntity, Powerable {
+    public static final String NAME_SEQUENCE = "brunel_spaceport_";
     private static final double LUNAR_GRAVITATIONAL_PULL = -1.625;
 
     // Power load of the spaceport that is incurred during its operational stages in kilowatts (kW).
@@ -25,8 +24,6 @@ public class Spaceport extends PhysicalEntity implements SimulationEntity, Power
 
     private static final int LOW_PRIORITY_POWER_REQUEST  = 5;
     private static final int HIGH_PRIORITY_POWER_REQUEST = 0;
-
-    private final Set<PhysicalEntity> landers;
 
     private final SKBaseFederate federate;
     private final SpaceportArm arm;
@@ -46,9 +43,8 @@ public class Spaceport extends PhysicalEntity implements SimulationEntity, Power
         setState(builder.state);
         setAcceleration(Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL));
 
-        landers = new CopyOnWriteArraySet<>();
         operatingMode = new AtomicInteger(0);
-        landerLiaison = new LanderLiaison(this, landers, federate);
+        landerLiaison = new LanderLiaison(this, federate);
 
         powerSystem = new PowerSystem(builder.name, this, federate);
         arm = new SpaceportArm(builder.armName, powerSystem);
@@ -65,12 +61,14 @@ public class Spaceport extends PhysicalEntity implements SimulationEntity, Power
         federate.addInteractionListener(new PowerAllocationListener(powerSystem));
         federate.addInteractionListener(new CargoTransferReadyListener(vehicleAssignmentRequestSystem, cargoTransferSystem));
         federate.addInteractionListener(new CargoPickupJobAcceptedListener(vehicleAssignmentRequestSystem, cargoTransferSystem));
+        // federate.addInteractionListener(new SpaceportArrivalCommitmentListener(getName(), landerLiaison));
     }
 
     @Override
     public void update() {
         powerSystem.consume(0.5 * POWER_RATING);
 
+        // landerLiaison.exec();
         vehicleAssignmentRequestSystem.exec();
         cargoTransferSystem.exec();
         arm.update();

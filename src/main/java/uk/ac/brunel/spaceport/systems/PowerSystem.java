@@ -37,6 +37,7 @@ public class PowerSystem extends AbstractSimulationSystem {
     @Override
     public void update() {
         if (embargoInEffect()) {
+            powerRequestCooldownTimer--;
             return;
         }
 
@@ -47,7 +48,7 @@ public class PowerSystem extends AbstractSimulationSystem {
     }
 
     private boolean embargoInEffect() {
-        return powerRequestCooldownTimer-- > 0;
+        return powerRequestCooldownTimer > 0;
     }
 
     public synchronized double consume(double amount) {

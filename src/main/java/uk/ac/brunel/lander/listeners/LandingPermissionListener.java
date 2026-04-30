@@ -1,8 +1,10 @@
 package uk.ac.brunel.lander.listeners;
 
+import hla.rti1516_2025.exceptions.*;
 import org.see.skf.core.InteractionListener;
 import org.see.skf.core.SKBaseFederate;
 import uk.ac.brunel.interactions.MSGLandingPermission;
+import uk.ac.brunel.interactions.MSGSpaceportArrivalCommitted;
 import uk.ac.brunel.lander.Lander;
 import uk.ac.brunel.lander.systems.NavigationSystem;
 import uk.ac.brunel.lander.systems.SpaceportAllocationRequestSystem;
@@ -42,6 +44,22 @@ public class LandingPermissionListener implements InteractionListener {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            confirmArrival(spaceportName);
+        }
+    }
+
+    private void confirmArrival(String spaceportName) {
+        MSGSpaceportArrivalCommitted commitment = new MSGSpaceportArrivalCommitted(lander.getName(), spaceportName);
+        dispatchInteraction(commitment);
+    }
+
+    private void dispatchInteraction(Object interaction) {
+        try {
+            federate.sendInteraction(interaction);
+        } catch (FederateNotExecutionMember | RTIinternalError | InteractionParameterNotDefined | RestoreInProgress |
+                 InteractionClassNotDefined | InteractionClassNotPublished | NotConnected | SaveInProgress e) {
+            throw new IllegalStateException(e);
         }
     }
 }

@@ -4,71 +4,71 @@ import hla.rti1516_2025.exceptions.*;
 import org.see.skf.core.SKBaseFederate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.brunel.core.PhysicalEntity;
+import uk.ac.brunel.core.AbstractSimulationSystem;
 import uk.ac.brunel.interactions.MSGLanderDepartureRequest;
 import uk.ac.brunel.interactions.MSGLandingPermission;
-import uk.ac.brunel.lander.LanderFederate;
 import uk.ac.brunel.types.OperationalVerdict;
 
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LanderLiaison {
     private static final Logger logger = LoggerFactory.getLogger(LanderLiaison.class);
 
-    private final Spaceport spaceport;
-    private final Set<PhysicalEntity> landers;
-    private final SKBaseFederate federate;
+    private static final short COMMITMENT_REPLY_WINDOW = 5;
 
+    private final Spaceport spaceport;
+    private final SKBaseFederate federate;
+    private final AtomicBoolean awaitingCommitment;
+    private short commitmentReplyWindowCounter;
     private String occupyingLander;
 
-    public LanderLiaison(Spaceport spaceport, Set<PhysicalEntity> landers, SKBaseFederate federate) {
+    public LanderLiaison(Spaceport spaceport, SKBaseFederate federate) {
         this.spaceport = spaceport;
-        this.landers = landers;
         this.federate = federate;
 
         occupyingLander = "";
+        awaitingCommitment = new AtomicBoolean(false);
+        commitmentReplyWindowCounter = 0;
+
+        // enable();
     }
 
     public synchronized void processLandingRequest(String landerName) {
         boolean outcome = false;
 
-        PhysicalEntity lander = queryLander(landerName);
-
-        if (!occupied() && lander != null && lander.getStatus().equals("Approaching")) {
+        if (!occupied()) {
             occupyingLander = landerName;
             outcome = true;
-            spaceport.setStatus("Occupied");
-            updateSpaceportAtRti();
+            updateSpaceportStatusAtRti("Occupied");
+            // logger.info("<{}> is now conditionally assigned to {}.", spaceport.getName(), landerName);
 
-            logger.info("<{}> is now assigned to {}.", spaceport.getName(), landerName);
+            // beginCommitmentReplyWindow();
+        } else {
+            logger.info("<{}>'s landing request was rejected by {}", landerName, spaceport.getName());
         }
-
-        logger.info("<{}>'s landing request was rejected by {}", landerName, spaceport.getName());
 
         dispatchPermission(landerName, outcome);
     }
 
-    private PhysicalEntity queryLander(String landerName) {
-        PhysicalEntity lander = isLanderAlreadyAvailable(landerName);
-
-        if (lander == null) {
-            lander = (PhysicalEntity) federate.queryRemoteObjectInstance(landerName);
-            landers.add(lander);
-
-            return lander;
-        }
-
-        return null;
+    private void beginCommitmentReplyWindow() {
+        awaitingCommitment.set(true);
+        commitmentReplyWindowCounter = COMMITMENT_REPLY_WINDOW;
     }
 
-    private PhysicalEntity isLanderAlreadyAvailable(String landerName) {
-        for (PhysicalEntity p : landers) {
-            if (p.getName().equals(landerName)) {
-                return p;
-            }
-        }
+    private void endCommitmentReplyWindow() {
+        awaitingCommitment.set(false);
+        commitmentReplyWindowCounter = 0;
+    }
 
-        return null;
+    public synchronized void landerCommitAction(String landerName) {
+        awaitingCommitment.set(false);
+        commitmentReplyWindowCounter = 0;
+
+        logger.info("<{}> is now officially assigned to {}.", landerName, spaceport.getName());
+    }
+
+    private boolean embargoInEffect() {
+        return commitmentReplyWindowCounter > 0;
     }
 
     public synchronized void initiateDeparture() {
@@ -76,8 +76,7 @@ public class LanderLiaison {
         dispatchInteraction(departureRequest);
 
         free();
-        spaceport.setStatus("Available");
-        federate.updateObjectInstance(spaceport);
+        updateSpaceportStatusAtRti("Available");
     }
 
     private boolean occupied() {
@@ -86,6 +85,8 @@ public class LanderLiaison {
 
     private void free() {
         occupyingLander = "";
+        updateSpaceportStatusAtRti("Available");
+        // endCommitmentReplyWindow();
     }
 
     private void dispatchPermission(String landerName, boolean accepted) {
@@ -120,7 +121,23 @@ public class LanderLiaison {
         return occupyingLander;
     }
 
-    private void updateSpaceportAtRti() {
+    private void updateSpaceportStatusAtRti(String status) {
+        spaceport.setStatus(status);
         federate.updateObjectInstance(spaceport);
     }
+
+    /*
+    @Override
+    public void update() {
+        if (embargoInEffect()) {
+            commitmentReplyWindowCounter--;
+            return;
+        }
+
+        if (awaitingCommitment.get()) {
+            logger.info("{} failed to commit to {} within the reply time window.", occupyingLander, spaceport.getName());
+            free();
+        }
+    }
+     */
 }

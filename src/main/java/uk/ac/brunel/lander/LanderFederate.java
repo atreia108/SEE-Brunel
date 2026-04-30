@@ -6,8 +6,8 @@ import org.see.skf.conf.FederateConfiguration;
 import org.see.skf.core.SEEFederateAmbassador;
 import org.see.skf.core.SEELateJoinerFederate;
 import uk.ac.brunel.core.PhysicalEntity;
-import uk.ac.brunel.federates.SpaceportFederate;
 import uk.ac.brunel.interactions.*;
+import uk.ac.brunel.spaceport.SpaceportFederate;
 import uk.ac.brunel.types.SpaceTimeCoordinateState;
 
 import java.io.File;
@@ -16,7 +16,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class LanderFederate extends SEELateJoinerFederate {
     private static final File confFile = new File("src/main/resources/lander.conf");
-    public static final String DEFAULT_NAME_SEQUENCE = "brunel_lander_";
 
     private final Set<Lander> landers;
 
@@ -39,6 +38,7 @@ public class LanderFederate extends SEELateJoinerFederate {
         publishInteractionClass(MSGLandingRequest.class);
         publishInteractionClass(MSGLanderTouchdown.class);
         publishInteractionClass(MSGLanderTakeoff.class);
+        publishInteractionClass(MSGSpaceportArrivalCommitted.class);
 
         subscribeInteractionClass(MSGLandingPermission.class);
         subscribeInteractionClass(MSGLanderDepartureRequest.class);
@@ -50,11 +50,11 @@ public class LanderFederate extends SEELateJoinerFederate {
             SpaceTimeCoordinateState defaultState = new SpaceTimeCoordinateState();
             defaultState.setPosition(SPAWN_POINTS[i - 1]);
 
-            String landerName = DEFAULT_NAME_SEQUENCE + i;
+            String landerName = Lander.DEFAULT_NAME_SEQUENCE + i;
             Lander l = new Lander.Builder()
                     .name(landerName)
                     .parentReferenceFrame("AitkenBasinLocalFixed")
-                    .spawnPoint(new SpaceTimeCoordinateState())
+                    .spawnPoint(defaultState)
                     .federate(this)
                     .build();
 

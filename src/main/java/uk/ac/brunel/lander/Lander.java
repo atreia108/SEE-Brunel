@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalEntity")
 public class Lander extends PhysicalEntity implements SimulationEntity {
+    public static final String DEFAULT_NAME_SEQUENCE = "brunel_lander_";
     private static final double LUNAR_GRAVITATIONAL_PULL = -1.625;
 
     private final SKBaseFederate federate;
@@ -40,7 +41,7 @@ public class Lander extends PhysicalEntity implements SimulationEntity {
         setAcceleration(Vector3D.of(0, 0, LUNAR_GRAVITATIONAL_PULL));
 
         federate = builder.federate;
-        spawnPoint = Vector3D.of(builder.state.getPosition().getX(), builder.state.getPosition().getY(), builder.state.getPosition().getZ());
+        spawnPoint = Vector3D.of(getState().getPosition().getX(), getState().getPosition().getY(), getState().getPosition().getZ());
         operatingMode = new AtomicInteger(0);
         spaceports = new CopyOnWriteArraySet<>();
 

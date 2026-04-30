@@ -8,7 +8,6 @@ import uk.ac.brunel.interactions.MSGLandingRequest;
 import uk.ac.brunel.lander.Lander;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SpaceportAllocationRequestSystem extends AbstractSimulationSystem {
     private static final short COOLDOWN_LIMIT = 10;
@@ -31,6 +30,7 @@ public class SpaceportAllocationRequestSystem extends AbstractSimulationSystem {
     @Override
     public void update() {
         if (embargoInEffect()) {
+            requestCooldownTimer--;
             return;
         }
 
@@ -38,7 +38,7 @@ public class SpaceportAllocationRequestSystem extends AbstractSimulationSystem {
     }
 
     private boolean embargoInEffect() {
-        return requestCooldownTimer-- > 0;
+        return requestCooldownTimer > 0;
     }
 
     private void requestSpaceportAllocation() {
@@ -52,6 +52,7 @@ public class SpaceportAllocationRequestSystem extends AbstractSimulationSystem {
                 dispatchInteraction(landingRequest);
 
                 requestCooldownTimer = COOLDOWN_LIMIT;
+                return;
             }
         }
     }

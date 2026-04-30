@@ -1,7 +1,7 @@
 package uk.ac.brunel.spaceport;
 
 import org.see.skf.annotations.ObjectClass;
-import uk.ac.brunel.models.PhysicalInterface;
+import uk.ac.brunel.core.PhysicalInterface;
 import uk.ac.brunel.core.SimulationEntity;
 import uk.ac.brunel.spaceport.systems.PowerSystem;
 
@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @ObjectClass(name = "HLAobjectRoot.PhysicalInterface")
 public class SpaceportArm extends PhysicalInterface implements SimulationEntity {
+    public static final String NAME_SEQUENCE = "brunel_spaceport_arm_";
+
     // Power load of the arm that is incurred during its operational stages in kilowatts (kW).
     public static final double IDLE_POWER_RATING = 0.435;
     public static final double PEAK_POWER_RATING = 2.000;
